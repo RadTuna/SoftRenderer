@@ -15,6 +15,7 @@ public:
 
 private:
 	FORCEINLINE void DrawGrid2D();
+	FORCEINLINE void DrawLine(const Vector2& StartPoint, const Vector2& EndPoint, const LinearColor& InColor);
 
 private:
 	RenderingSoftwareInterface* RSI = nullptr;

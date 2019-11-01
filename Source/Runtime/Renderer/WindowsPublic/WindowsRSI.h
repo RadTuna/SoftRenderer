@@ -23,6 +23,7 @@ public:
 	virtual void EndFrame() override;
 
 	virtual void DrawPoint(const Vector2& InVectorPos, const LinearColor& InColor) override;
+	virtual void DrawPoint(const ScreenPoint& InScreenPos, const LinearColor& InColor) override;
 
 	virtual void DrawFullVerticalLine(int InX, const LinearColor& InColor) override;
 	virtual void DrawFullHorizontalLine(int InY, const LinearColor& InColor) override;

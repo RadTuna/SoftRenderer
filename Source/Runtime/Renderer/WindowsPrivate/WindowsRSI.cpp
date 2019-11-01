@@ -52,6 +52,11 @@ void WindowsRSI::DrawPoint(const Vector2& InVectorPos, const LinearColor& InColo
 	SetPixel(ScreenPoint::ToScreenCoordinate(ScreenSize, InVectorPos), InColor);
 }
 
+void WindowsRSI::DrawPoint(const ScreenPoint& InScreenPos, const LinearColor& InColor)
+{
+	SetPixel(InScreenPos, InColor);
+}
+
 void WindowsRSI::DrawFullVerticalLine(int InX, const LinearColor & InColor)
 {
 	if (InX < 0 || InX >= ScreenSize.X)

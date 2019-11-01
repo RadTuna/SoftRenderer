@@ -8,6 +8,7 @@ SoftRenderer::SoftRenderer(RenderingSoftwareInterface* InRSI) : RSI(InRSI)
 
 void SoftRenderer::OnTick()
 {
+	// 별도로 Initialize함수호출을 하지 않기 위해 아래와 같이함.
 	if (!IsAllInitialized)
 	{
 		// Init Query Performance Timer

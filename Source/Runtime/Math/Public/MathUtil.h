@@ -69,6 +69,30 @@ struct Math
 		return X < Min ? Min : X < Max ? X : Max;
 	}
 
+	template<class T>
+	static FORCEINLINE void Swap(T& A, T& B)
+	{
+		T Temp = A;
+		A = B;
+		B = Temp;
+	}
+
+	static FORCEINLINE int Sign(float A)
+	{
+		if (A > 0.0f)
+		{
+			return 1;
+		}
+		else if (A < 0.0f)
+		{
+			return -1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
 	static FORCEINLINE void GetSinCos(float& OutSin, float& OutCos, float InDegree)
 	{
 		if (InDegree == 0.f)
