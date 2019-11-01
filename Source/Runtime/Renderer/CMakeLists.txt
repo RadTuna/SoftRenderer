@@ -10,6 +10,7 @@ file(GLOB COMMON_FILES
        ${PROJECT_SOURCE_DIR}/*.h)
 	   
 file(GLOB_RECURSE MODULE_FILES
+       ${PROJECT_SOURCE_DIR}/Private/*.cpp
        ${PROJECT_SOURCE_DIR}/Public/*.h
        ${PROJECT_SOURCE_DIR}/WindowsPublic/*.h
        ${PROJECT_SOURCE_DIR}/WindowsPrivate/*.h
