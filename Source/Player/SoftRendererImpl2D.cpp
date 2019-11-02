@@ -103,17 +103,17 @@ void SoftRendererImpl2D::RenderFrameImpl()
 	assert(RSI != nullptr && RSI->IsInitialized() && !ScreenSize.HasZero());
 
 	DrawGrid2D();
-	DrawLine(Vector2(10.0f, 10.0f), Vector2(100.0f, 50.0f), LinearColor::Green);
-	DrawLine(Vector2(10.0f, 10.0f), Vector2(50.0f, 100.0f), LinearColor::Green);
+	DrawLine(Vector2(10.0f, 10.0f), Vector2(100.0f, 50.0f), LinearColor::Blue);
+	DrawLine(Vector2(10.0f, 10.0f), Vector2(50.0f, 100.0f), LinearColor::Blue);
 
-	DrawLine(Vector2(-10.0f, 10.0f), Vector2(-100.0f, 50.0f), LinearColor::Green);
-	DrawLine(Vector2(-10.0f, 10.0f), Vector2(-50.0f, 100.0f), LinearColor::Green);
+	DrawLine(Vector2(-10.0f, 10.0f), Vector2(-100.0f, 50.0f), LinearColor::Blue);
+	DrawLine(Vector2(-10.0f, 10.0f), Vector2(-50.0f, 100.0f), LinearColor::Blue);
 
-	DrawLine(Vector2(10.0f, -10.0f), Vector2(100.0f, -50.0f), LinearColor::Green);
-	DrawLine(Vector2(10.0f, -10.0f), Vector2(50.0f, -100.0f), LinearColor::Green);
+	DrawLine(Vector2(10.0f, -10.0f), Vector2(100.0f, -50.0f), LinearColor::Blue);
+	DrawLine(Vector2(10.0f, -10.0f), Vector2(50.0f, -100.0f), LinearColor::Blue);
 
-	DrawLine(Vector2(-10.0f, -10.0f), Vector2(-100.0f, -50.0f), LinearColor::Green);
-	DrawLine(Vector2(-10.0f, -10.0f), Vector2(-50.0f, -100.0f), LinearColor::Green);
+	DrawLine(Vector2(-10.0f, -10.0f), Vector2(-100.0f, -50.0f), LinearColor::Blue);
+	DrawLine(Vector2(-10.0f, -10.0f), Vector2(-50.0f, -100.0f), LinearColor::Blue);
 
 	RSI->DrawPoint(Vector2(50.0f, 50.0f), LinearColor::Green);
 
