@@ -34,6 +34,7 @@ public:
 	void SwapBuffer();
 
 protected:
+
 	bool IsGDIInitialized = false;
 
 	FORCEINLINE bool IsInScreen(const ScreenPoint& InPos) const;

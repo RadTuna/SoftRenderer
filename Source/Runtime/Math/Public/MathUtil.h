@@ -12,6 +12,7 @@ struct Math
 	static const float InvPI;
 	static const int IntMin;
 	static const int IntMax;
+	static const float Epsilon;
 
 	static FORCEINLINE int TruncToInt(float InFloat)
 	{
@@ -90,6 +91,18 @@ struct Math
 		else
 		{
 			return 0;
+		}
+	}
+
+	static FORCEINLINE bool IsNearlyFloat(float A, float B)
+	{
+		if (Math::Abs(A - B) < Epsilon)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
 

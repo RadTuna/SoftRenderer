@@ -39,18 +39,22 @@ bool RenderContext::Initialize()
 
 void RenderContext::DrawCall()
 {
-	VertexShader::FragmentInput OutPrimitiveData[PRIMITIVE_COUNT];
+	VertexShader::VertexOutput OutPrimitiveData[PRIMITIVE_COUNT];
 
 	UINT NumIndices = mInputAssembler->GetIndexBuffer()->DataSize / mInputAssembler->GetIndexStride();
 	for (UINT IndexOffset = 0; IndexOffset < NumIndices; IndexOffset += PRIMITIVE_COUNT)
 	{
+		// 버텍스 쉐이더를 호출해 InputAssembler의 값을 연산.
+		// 이후, 연산이 끝난 값을 PRIMITIVE단위로 반환.
 		mVertexShader->ProcessVertexShader(
 			mInputAssembler->GetVertexBuffer(),
 			mInputAssembler->GetIndexBuffer(),
 			IndexOffset,
 			OutPrimitiveData);
 
+		mRasterizer->SetFragmentShaderFunction(mFragmentShader->ProcessFragmentShader);
 
+		mRasterizer->Rasterize(OutPrimitiveData);
 	}
 
 }

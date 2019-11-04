@@ -2,7 +2,7 @@
 #include "Precompiled.h"
 #include "..\Public\VertexShader.h"
 
-void VertexShader::ProcessVertexShader(VertexBuffer* InVertexBuffer, IndexBuffer* InIndexBuffer, UINT IndexOffset, void* OutputData)
+void VertexShader::ProcessVertexShader(VertexBuffer* InVertexBuffer, IndexBuffer* InIndexBuffer, UINT IndexOffset, VertexOutput* OutputData)
 {
 	VertexInput* VertexInputData = reinterpret_cast<VertexInput*>(InVertexBuffer->Data);
 	UINT* IndexInputData = InIndexBuffer->Data;
@@ -11,7 +11,7 @@ void VertexShader::ProcessVertexShader(VertexBuffer* InVertexBuffer, IndexBuffer
 		return;
 	}
 
-	FragmentInput* Output = reinterpret_cast<FragmentInput*>(OutputData);
+	VertexOutput* Output = reinterpret_cast<VertexOutput*>(OutputData);
 
 	for (UINT i = 0; i < PRIMITIVE_COUNT; ++i)
 	{
@@ -19,9 +19,9 @@ void VertexShader::ProcessVertexShader(VertexBuffer* InVertexBuffer, IndexBuffer
 	}
 }
 
-VertexShader::FragmentInput VertexShader::VertexMain(VertexInput InputData)
+VertexShader::VertexOutput VertexShader::VertexMain(VertexInput InputData)
 {
-	FragmentInput Output;
+	VertexOutput Output;
 
 	Output.Position = InputData.Position;
 

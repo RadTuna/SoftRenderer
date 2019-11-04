@@ -7,4 +7,5 @@ const float Math::HalfPI = 1.57079632679f;
 const float Math::InvPI = 0.31830988618f;
 const int Math::IntMin = (-2147483647 - 1);
 const int Math::IntMax = 2147483647;
+const float Math::Epsilon = 1.e-4f;
 
