@@ -64,7 +64,7 @@ FORCEINLINE Matrix4x4 Matrix4x4::Tranpose() const
 inline Matrix4x4 Matrix4x4::GetRotationMatrix(const Vector4& Rotation)
 {
 	float XSin, XCos;
-	Math::SinCos(&XSin, &XCos, Rotation.X);
+	Math::SinCos(&XSin, &XCos, Math::Deg2Rad(Rotation.X));
 	Matrix4x4 XRotMatrix(
 		Vector4(1.0f, 0.0f, 0.0f, 0.0f),
 		Vector4(0.0f, XCos, -XSin, 0.0f),
@@ -72,7 +72,7 @@ inline Matrix4x4 Matrix4x4::GetRotationMatrix(const Vector4& Rotation)
 		Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	float YSin, YCos;
-	Math::SinCos(&YSin, &YCos, Rotation.Y);
+	Math::SinCos(&YSin, &YCos, Math::Deg2Rad(Rotation.Y));
 	Matrix4x4 YRotMatrix(
 		Vector4(YCos, 0.0f, YSin, 0.0f),
 		Vector4(0.0f, 1.0f, 0.0f, 0.0f),
@@ -80,7 +80,7 @@ inline Matrix4x4 Matrix4x4::GetRotationMatrix(const Vector4& Rotation)
 		Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 
 	float ZSin, ZCos;
-	Math::SinCos(&ZSin, &ZCos, Rotation.Z);
+	Math::SinCos(&ZSin, &ZCos, Math::Deg2Rad(Rotation.Z));
 	Matrix4x4 ZRotMatrix(
 		Vector4(ZCos, -ZSin, 0.0f, 0.0f),
 		Vector4(ZSin, ZCos, 0.0f, 0.0f),

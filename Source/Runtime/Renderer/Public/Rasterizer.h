@@ -27,6 +27,7 @@ public:
 	FORCEINLINE void GetBaycentricCoodinate(); // WIP
 	FORCEINLINE void GetInterpolratedPrimitive(); // WIP
 	FORCEINLINE void SortVertexByY(VertexShader::VertexOutput* PrimitiveData);
+	FORCEINLINE bool IsFrontNormal(VertexShader::VertexOutput* PrimitivaData);
 	
 	FORCEINLINE void SetFragmentShaderFunction(void(FragmentShader::*InFragmentShaderFunc)(FragmentShader::FragmentInput*, UINT));
 	FORCEINLINE void SetRasterizerState(const ScreenPoint& InScreenSize, bool InUseGeometryOutline, bool InUseRasterization);
@@ -48,6 +49,27 @@ void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 	if (PrimitiveData == nullptr)
 	{
 		return;
+	}
+
+	if (PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Z > 1.0f)
+	{
+		return;
+	}
+
+	Vector2 PrimitiveVector1 = PrimitiveData[PRIMITIVE_INDEX_THREE].Position.ToVector2() - PrimitiveData[PRIMITIVE_INDEX_ONE].Position.ToVector2();
+	Vector2 PrimitiveVector2 = PrimitiveData[PRIMITIVE_INDEX_THREE].Position.ToVector2() - PrimitiveData[PRIMITIVE_INDEX_TWO].Position.ToVector2();
+
+	float PrimitiveZ = (PrimitiveVector1.X * PrimitiveVector2.Y) - (PrimitiveVector1.Y * PrimitiveVector2.X);
+
+	if (PrimitiveZ < 0)
+	{
+		return;
+	}
+
+	for (int i = 0; i < PRIMITIVE_COUNT; ++i)
+	{
+		PrimitiveData[i].Position.X *= ScreenSize.Y;
+		PrimitiveData[i].Position.Y *= ScreenSize.X;
 	}
 
 	SortVertexByY(PrimitiveData);
@@ -165,10 +187,13 @@ void Rasterizer::WriteFlatLine(const Vector4& StartPoint, const Vector4& EndPoin
 	// Not Implemented;
 }
 
-
 void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, const Vector4& EndPoint)
 {
 	ScreenPoint CurrentPoint = ScreenPoint::ToScreenCoordinate(ScreenSize, StartPoint.ToVector2());
+	int XMin = 0;
+	int XMax = ScreenSize.X;
+	int YMin = 0;
+	int YMax = ScreenSize.Y;
 
 	// Tempolary Code
 	LinearColor OutlineColor = LinearColor::Red;
@@ -189,7 +214,11 @@ void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, const Vector4& 
 
 	for (int CurX = 0; CurX < DeltaX; ++CurX)
 	{
-		RSI->DrawPoint(CurrentPoint, OutlineColor);
+		// Out Boarder Exception
+		if (CurrentPoint.X > XMin&& CurrentPoint.X < XMax && CurrentPoint.Y > YMin&& CurrentPoint.Y < YMax)
+		{
+			RSI->DrawPoint(CurrentPoint, OutlineColor);
+		}
 
 		if (Judge >= 0)
 		{

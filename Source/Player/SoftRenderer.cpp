@@ -39,8 +39,6 @@ void SoftRenderer::OnTick()
 			return;
 		}
 
-		SetupRenderParameter();
-
 		IsRendererInitialized = true;
 
 		// Check Input Binding

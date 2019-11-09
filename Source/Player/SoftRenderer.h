@@ -120,14 +120,17 @@ void SoftRenderer::Update()
 	// GameLogic Implement
 	float DeltaSeconde = FrameTime / 1000.0f;
 
+	float MoveSensivity = 100.0f;
+	float RotateSensivity = 100.0f;
+
 	// CameraLocation
-	CameraLocation.Z += InputManager.MoveForward();
-	CameraLocation.X += InputManager.MoveRight();
-	CameraLocation.Y += InputManager.MoveUp();
+	CameraLocation.Z += InputManager.MoveForward() * DeltaSeconde * MoveSensivity;
+	CameraLocation.X += InputManager.MoveRight() * DeltaSeconde * MoveSensivity;
+	CameraLocation.Y += InputManager.MoveUp() * DeltaSeconde * MoveSensivity;
 
 	// CameraRotation
-	CameraRotation.X += InputManager.GetXAxis() * DeltaSeconde;
-	CameraRotation.Y += InputManager.GetYAxis() * DeltaSeconde;
+	CameraRotation.Y -= InputManager.GetXAxis() * DeltaSeconde * RotateSensivity;
+	CameraRotation.X += InputManager.GetYAxis() * DeltaSeconde * RotateSensivity;
 
 }
 
@@ -155,10 +158,14 @@ void SoftRenderer::RenderFrame()
 	// Rendering Implement;
 	DrawGrid2D();
 
+	SetupRenderParameter();
+
 	MatrixBufferType* MatrixBuffer = new MatrixBufferType;
 	CalculrateWorldMatrix(MatrixBuffer->WorldMatrix);
 	CalculrateViewMatrix(MatrixBuffer->ViewMatrix);
-	CalculrateProjectionMatrix(MatrixBuffer->ProjectionMatrix, 90.0f, 0.1f, 1000.0f);
+
+	// Matrix, Fov, Near, Far
+	CalculrateProjectionMatrix(MatrixBuffer->ProjectionMatrix, Math::Deg2Rad(90.0f), 0.1f, 1000.0f);
 
 	RendererContext->VSSetMatrixBuffer(MatrixBuffer);
 
@@ -172,20 +179,30 @@ void SoftRenderer::SetupRenderParameter()
 {
 	RendererContext->RSSetRasterizeState(true, false);
 
-	VertexDataType* Vertices = new VertexDataType[4];
+	VertexDataType* Vertices = new VertexDataType[8];
 
-	Vertices[0].Position = Vector4(-100.0f, 100.0f, 1.0f, 0.0f);
-	Vertices[1].Position = Vector4(100.0f, 100.0f, 1.0f, 0.0f);
-	Vertices[2].Position = Vector4(100.0f, -100.0f, 1.0f, 0.0f);
-	Vertices[3].Position = Vector4(-100.0f, -100.0f, 1.0f, 0.0f);
+	Vertices[0].Position = Vector4(-10.0f, 10.0f, -10.0f, 0.0f);
+	Vertices[1].Position = Vector4(10.0f, 10.0f, -10.0f, 0.0f);
+	Vertices[2].Position = Vector4(10.0f, 10.0f, 10.0f, 0.0f);
+	Vertices[3].Position = Vector4(-10.0f, 10.0f, 10.0f, 0.0f);
+	Vertices[4].Position = Vector4(-10.0f, -10.0f, -10.0f, 0.0f);
+	Vertices[5].Position = Vector4(10.0f, -10.0f, -10.0f, 0.0f);
+	Vertices[6].Position = Vector4(10.0f, -10.0f, 10.0f, 0.0f);
+	Vertices[7].Position = Vector4(-10.0f, -10.0f, 10.0f, 0.0f);
 
-	UINT* Indices = new UINT[6]{ 0, 1, 3, 1, 2, 3 };
+	UINT* Indices = new UINT[36]{
+		0, 1, 3, 1, 2, 3,
+		0, 1, 4, 1, 5, 4,
+		0, 4, 3, 3, 4, 7,
+		3, 2, 7, 2, 6, 7,
+		2, 5, 6, 2, 1, 5,
+		4, 5, 7, 5, 6, 7 };
 
 	VertexBuffer* RenderVertexBuffer = nullptr;
-	RendererFactory->CreateVertexBuffer(sizeof(VertexDataType) * 4, Vertices, &RenderVertexBuffer);
+	RendererFactory->CreateVertexBuffer(sizeof(VertexDataType) * 8, Vertices, &RenderVertexBuffer);
 
 	IndexBuffer* RenderIndexBuffer = nullptr;
-	RendererFactory->CreateIndexBuffer(sizeof(UINT) * 6, Indices, &RenderIndexBuffer);
+	RendererFactory->CreateIndexBuffer(sizeof(UINT) * 36, Indices, &RenderIndexBuffer);
 
 	RendererContext->IASetVertexBuffer(RenderVertexBuffer, sizeof(VertexDataType));
 	RendererContext->IASetIndexBuffer(RenderIndexBuffer, sizeof(UINT));
@@ -241,7 +258,7 @@ void SoftRenderer::CalculrateWorldMatrix(Matrix4x4& WorldMatrix)
 
 void SoftRenderer::CalculrateViewMatrix(Matrix4x4& ViewMatrix)
 {
-	Vector3 LookVector(0.0f, 0.0f, -1.0f);
+	Vector3 LookVector(0.0f, 0.0f, 1.0f);
 	Vector3 UpVector(0.0f, 1.0f, 0.0f);
 
 	Matrix4x4 RotationMatrix = Matrix4x4::GetRotationMatrix(CameraRotation);
@@ -249,17 +266,21 @@ void SoftRenderer::CalculrateViewMatrix(Matrix4x4& ViewMatrix)
 	LookVector *= RotationMatrix;
 	UpVector *= RotationMatrix;
 
-	Vector3 XAxisVector = LookVector.Cross(UpVector);
-	UpVector = LookVector.Cross(XAxisVector);
+	LookVector += CameraLocation.ToVector3();
+
+	Vector3 ZAxisVector = LookVector - CameraLocation.ToVector3();
+
+	Vector3 XAxisVector = ZAxisVector.Cross(UpVector);
+	UpVector = ZAxisVector.Cross(XAxisVector);
 
 	LookVector.Normalize();
 	UpVector.Normalize();
 	XAxisVector.Normalize();
 
 	Matrix4x4 GenViewMatrix(
-		Vector4(XAxisVector.X, UpVector.X, LookVector.X, 0.0f),
-		Vector4(XAxisVector.Y, UpVector.Y, LookVector.Y, 0.0f),
-		Vector4(XAxisVector.Z, UpVector.Z, LookVector.Z, 0.0f),
+		Vector4(XAxisVector.X, UpVector.X, ZAxisVector.X, 0.0f),
+		Vector4(XAxisVector.Y, UpVector.Y, ZAxisVector.Y, 0.0f),
+		Vector4(XAxisVector.Z, UpVector.Z, ZAxisVector.Z, 0.0f),
 		Vector4(-CameraLocation.X, -CameraLocation.Y, -CameraLocation.Z, 1.0f));
 
 	ViewMatrix = GenViewMatrix;
