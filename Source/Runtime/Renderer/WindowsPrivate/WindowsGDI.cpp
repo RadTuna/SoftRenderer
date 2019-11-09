@@ -139,17 +139,6 @@ LinearColor WindowsGDI::GetPixel(const ScreenPoint& InPos)
 	return LinearColor(bufferColor);
 }
 
-FORCEINLINE bool WindowsGDI::IsInScreen(const ScreenPoint& InPos) const
-{
-	int position = GetScreenBufferIndex(InPos);
-	if (position < 0 || position >= (ScreenSize.X * ScreenSize.Y))
-	{
-		return false;
-	}
-
-	return true;
-}
-
 Color32* WindowsGDI::GetScreenBuffer() const
 {
 	return ScreenBuffer;

@@ -1,18 +1,19 @@
-
 #pragma once
 
 #include <memory>
 #include "WindowsGDI.h"
 #include "RenderingSoftwareInterface.h"
 
-class WindowsGDI;
+class WindowsRSI;
 class WindowsRSI : public WindowsGDI, public RenderingSoftwareInterface
 {
 public:
+
 	WindowsRSI() = default;
 	~WindowsRSI();
 
 public:
+
 	virtual bool Init(const ScreenPoint& InScreenSize) override;
 	virtual void Shutdown() override;
 	virtual bool IsInitialized() const { return IsGDIInitialized; }

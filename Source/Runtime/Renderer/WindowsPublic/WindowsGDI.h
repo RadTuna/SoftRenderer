@@ -55,3 +55,14 @@ protected:
 
 	ScreenPoint ScreenSize;
 };
+
+bool WindowsGDI::IsInScreen(const ScreenPoint& InPos) const
+{
+	int position = GetScreenBufferIndex(InPos);
+	if (position < 0 || position >= (ScreenSize.X * ScreenSize.Y))
+	{
+		return false;
+	}
+
+	return true;
+}

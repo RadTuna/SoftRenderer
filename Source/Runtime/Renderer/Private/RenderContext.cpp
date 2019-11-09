@@ -2,8 +2,11 @@
 #include "Precompiled.h"
 #include "..\Public\RenderContext.h"
 
-bool RenderContext::Initialize()
+bool RenderContext::Initialize(RenderingSoftwareInterface* InRSI, const ScreenPoint& InScreenSize)
 {
+	ScreenSize = InScreenSize;
+	RSI = InRSI;
+
 	mInputAssembler = std::make_unique<InputAssembler>();
 	if (mInputAssembler == nullptr)
 	{
@@ -16,7 +19,7 @@ bool RenderContext::Initialize()
 		return false;
 	}
 
-	mRasterizer = std::make_unique<Rasterizer>();
+	mRasterizer = std::make_unique<Rasterizer>(RSI);
 	if (mRasterizer == nullptr)
 	{
 		return false;
@@ -37,34 +40,3 @@ bool RenderContext::Initialize()
 	return true;
 }
 
-void RenderContext::DrawCall()
-{
-	VertexShader::VertexOutput OutPrimitiveData[PRIMITIVE_COUNT];
-
-	UINT NumIndices = mInputAssembler->GetIndexBuffer()->DataSize / mInputAssembler->GetIndexStride();
-	for (UINT IndexOffset = 0; IndexOffset < NumIndices; IndexOffset += PRIMITIVE_COUNT)
-	{
-		// 버텍스 쉐이더를 호출해 InputAssembler의 값을 연산.
-		// 이후, 연산이 끝난 값을 PRIMITIVE단위로 반환.
-		mVertexShader->ProcessVertexShader(
-			mInputAssembler->GetVertexBuffer(),
-			mInputAssembler->GetIndexBuffer(),
-			IndexOffset,
-			OutPrimitiveData);
-
-		mRasterizer->SetFragmentShaderFunction(mFragmentShader->ProcessFragmentShader);
-
-		mRasterizer->Rasterize(OutPrimitiveData);
-	}
-
-}
-
-void RenderContext::IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride)
-{
-	mInputAssembler->SetVertexBuffer(Buffer, Stride);
-}
-
-void RenderContext::IASetIndexBuffer(IndexBuffer* Buffer, UINT Stride)
-{
-	mInputAssembler->SetIndexBuffer(Buffer, Stride);
-}

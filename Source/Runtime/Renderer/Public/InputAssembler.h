@@ -7,13 +7,15 @@ class InputAssembler final
 public:
 
 	InputAssembler() = default;
-	~InputAssembler();
+	~InputAssembler() { ClearBuffers(); }
 
 	FORCEINLINE void SetVertexBuffer(VertexBuffer* InBuffer, UINT InStride);
 	FORCEINLINE void SetIndexBuffer(IndexBuffer* InBuffer, UINT InStride);
 
 private:
 
+	FORCEINLINE void ClearVertexBuffer();
+	FORCEINLINE void ClearIndexBuffer();
 	FORCEINLINE void ClearBuffers();
 
 private:
@@ -31,3 +33,57 @@ public:
 	FORCEINLINE UINT GetIndexStride() const { return mIndexStride; }
 
 };
+
+void InputAssembler::SetVertexBuffer(VertexBuffer* InBuffer, UINT InStride)
+{
+	ClearVertexBuffer();
+
+	mVertexBuffer = InBuffer;
+	mVertexStride = InStride;
+}
+
+void InputAssembler::SetIndexBuffer(IndexBuffer* InBuffer, UINT InStride)
+{
+	ClearIndexBuffer();
+
+	mIndexBuffer = InBuffer;
+	mIndexStride = InStride;
+}
+
+inline void InputAssembler::ClearVertexBuffer()
+{
+	if (mVertexBuffer != nullptr)
+	{
+		if (mVertexBuffer->Data != nullptr)
+		{
+			delete[] mVertexBuffer->Data;
+			mVertexBuffer->Data = nullptr;
+		}
+
+		delete mVertexBuffer;
+		mVertexBuffer = nullptr;
+	}
+	mVertexStride = 0;
+}
+
+inline void InputAssembler::ClearIndexBuffer()
+{
+	if (mIndexBuffer != nullptr)
+	{
+		if (mIndexBuffer->Data != nullptr)
+		{
+			delete[] mIndexBuffer->Data;
+			mIndexBuffer->Data = nullptr;
+		}
+
+		delete mIndexBuffer;
+		mIndexBuffer = nullptr;
+	}
+	mIndexStride = 0;
+}
+
+void InputAssembler::ClearBuffers()
+{
+	ClearVertexBuffer();
+	ClearIndexBuffer();
+}

@@ -2,9 +2,9 @@
 #include "Precompiled.h"
 #include "..\Public\RenderFactory.h"
 
-bool RenderFactory::CreateVertexBuffer(UINT DataSize, void* InData, VertexBuffer* OutBuffer)
+bool RenderFactory::CreateVertexBuffer(UINT DataSize, void* InData, VertexBuffer** OutBuffer)
 {
-	if (InData == nullptr || OutBuffer != nullptr)
+	if (InData == nullptr || *OutBuffer != nullptr)
 	{
 		return false;
 	}
@@ -15,14 +15,14 @@ bool RenderFactory::CreateVertexBuffer(UINT DataSize, void* InData, VertexBuffer
 		return false;
 	}
 
-	OutBuffer = new VertexBuffer;
+	(*OutBuffer) = new VertexBuffer;
 	if (OutBuffer == nullptr)
 	{
 		return false;
 	}
 
-	OutBuffer->Data = new unsigned char[DataSize];
-	if (OutBuffer->Data == nullptr)
+	(*OutBuffer)->Data = new unsigned char[DataSize];
+	if ((*OutBuffer)->Data == nullptr)
 	{
 		delete OutBuffer;
 		OutBuffer = nullptr;
@@ -31,16 +31,16 @@ bool RenderFactory::CreateVertexBuffer(UINT DataSize, void* InData, VertexBuffer
 
 	for (UINT i = 0; i < DataSize; ++i)
 	{
-		OutBuffer->Data[i] = InnerData[i];
+		(*OutBuffer)->Data[i] = InnerData[i];
 	}
-	OutBuffer->DataSize = DataSize;
+	(*OutBuffer)->DataSize = DataSize;
 
 	return true;
 }
 
-bool RenderFactory::CreateIndexBuffer(UINT DataSize, void* InData, IndexBuffer* OutBuffer)
+bool RenderFactory::CreateIndexBuffer(UINT DataSize, void* InData, IndexBuffer** OutBuffer)
 {
-	if (InData == nullptr || OutBuffer != nullptr)
+	if (InData == nullptr || *OutBuffer != nullptr)
 	{
 		return false;
 	}
@@ -51,14 +51,14 @@ bool RenderFactory::CreateIndexBuffer(UINT DataSize, void* InData, IndexBuffer* 
 		return false;
 	}
 
-	OutBuffer = new IndexBuffer;
+	(*OutBuffer) = new IndexBuffer;
 	if (OutBuffer == nullptr)
 	{
 		return false;
 	}
 
-	OutBuffer->Data = new UINT[DataSize];
-	if (OutBuffer->Data == nullptr)
+	(*OutBuffer)->Data = new UINT[DataSize];
+	if ((*OutBuffer)->Data == nullptr)
 	{
 		delete OutBuffer;
 		OutBuffer = nullptr;
@@ -67,9 +67,9 @@ bool RenderFactory::CreateIndexBuffer(UINT DataSize, void* InData, IndexBuffer* 
 
 	for (UINT i = 0; i < DataSize; ++i)
 	{
-		OutBuffer->Data[i] = InnerData[i];
+		(*OutBuffer)->Data[i] = InnerData[i];
 	}
-	OutBuffer->DataSize = DataSize;
+	(*OutBuffer)->DataSize = DataSize;
 
 	return true;
 }

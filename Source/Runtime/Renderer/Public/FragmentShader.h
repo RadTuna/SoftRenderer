@@ -16,11 +16,22 @@ public:
 	~FragmentShader() = default;
 
 	FORCEINLINE void ProcessFragmentShader(FragmentInput* InFragments, UINT FragmentSize); // WIP
+	FORCEINLINE void GetProcessFragmentShader(void(FragmentShader::**InFragmentShaderFunc)(FragmentShader::FragmentInput*, UINT));
 
 private:
 
 	FORCEINLINE const Vector4& FragmentMain(FragmentInput& InputData); // WIP
 
-private:
 };
+
+void FragmentShader::ProcessFragmentShader(FragmentInput* InFragments, UINT FragmentSize)
+{
+	// Not Implement
+	return;
+}
+
+void FragmentShader::GetProcessFragmentShader(void(FragmentShader::**InFragmentShaderFunc)(FragmentShader::FragmentInput*, UINT))
+{
+	*InFragmentShaderFunc = &FragmentShader::ProcessFragmentShader;
+}
 
