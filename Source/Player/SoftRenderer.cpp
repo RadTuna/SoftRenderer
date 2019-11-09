@@ -44,7 +44,7 @@ void SoftRenderer::OnTick()
 		IsRendererInitialized = true;
 
 		// Check Input Binding
-		if (InputManager.GetXAxis && InputManager.GetYAxis && InputManager.SpacePressed)
+		if (InputManager.GetXAxis && InputManager.GetYAxis && InputManager.MoveForward && InputManager.MoveRight && InputManager.MoveUp)
 		{
 			IsInputInitialized = true;
 		}

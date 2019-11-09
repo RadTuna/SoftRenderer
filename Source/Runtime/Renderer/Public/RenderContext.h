@@ -22,6 +22,7 @@ public:
 	FORCEINLINE void RSSetRasterizeState(bool UseOutline, bool UseRasterization);
 	FORCEINLINE void IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride);
 	FORCEINLINE void IASetIndexBuffer(IndexBuffer* Buffer, UINT Stride);
+	FORCEINLINE void VSSetMatrixBuffer(void* Buffer);
 
 private:
 
@@ -75,5 +76,19 @@ void RenderContext::IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride)
 void RenderContext::IASetIndexBuffer(IndexBuffer* Buffer, UINT Stride)
 {
 	mInputAssembler->SetIndexBuffer(Buffer, Stride);
+}
+
+void RenderContext::VSSetMatrixBuffer(void* Buffer)
+{
+	if (Buffer == nullptr)
+	{
+		return;
+	}
+
+	VertexShader::MatrixBuffer* pMatrixBuffer = reinterpret_cast<VertexShader::MatrixBuffer*>(Buffer);
+
+	mVertexShader->VertexShaderMatrix.WorldMatrix = pMatrixBuffer->WorldMatrix;
+	mVertexShader->VertexShaderMatrix.ViewMatrix = pMatrixBuffer->ViewMatrix;
+	mVertexShader->VertexShaderMatrix.ProjectionMatrix = pMatrixBuffer->ProjectionMatrix;
 }
 

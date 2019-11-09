@@ -3,6 +3,7 @@
 #include "Vector4.h"
 #include "Matrix2x2.h"
 #include "Matrix3x3.h"
+#include "MathUtil.h"
 
 struct Matrix4x4
 {
@@ -12,6 +13,9 @@ public:
 
 	FORCEINLINE void SetIdentity();
 	FORCEINLINE Matrix4x4 Tranpose() const;
+	FORCEINLINE static Matrix4x4 GetRotationMatrix(const Vector4& Rotation);
+	FORCEINLINE static Matrix4x4 GetScaleMatrix(const Vector4& Scale);
+	FORCEINLINE static Matrix4x4 GetLocationMatrix(const Vector4& Location);
 
 	FORCEINLINE const Vector4& operator[](int InIndex) const;
 	FORCEINLINE Vector4& operator[](int InIndex);
@@ -34,7 +38,9 @@ public:
 	FORCEINLINE Matrix4x4 operator*(float InS) const;
 
 private:
+
 	Vector4 Cols[4];
+
 };
 
 FORCEINLINE void Matrix4x4::SetIdentity()
@@ -53,6 +59,57 @@ FORCEINLINE Matrix4x4 Matrix4x4::Tranpose() const
 		Vector4(Cols[0].Z, Cols[1].Z, Cols[2].Z, Cols[3].Z),
 		Vector4(Cols[0].W, Cols[1].W, Cols[2].W, Cols[3].W)
 	);
+}
+
+inline Matrix4x4 Matrix4x4::GetRotationMatrix(const Vector4& Rotation)
+{
+	float XSin, XCos;
+	Math::SinCos(&XSin, &XCos, Rotation.X);
+	Matrix4x4 XRotMatrix(
+		Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+		Vector4(0.0f, XCos, -XSin, 0.0f),
+		Vector4(0.0f, XSin, XCos, 0.0f),
+		Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	float YSin, YCos;
+	Math::SinCos(&YSin, &YCos, Rotation.Y);
+	Matrix4x4 YRotMatrix(
+		Vector4(YCos, 0.0f, YSin, 0.0f),
+		Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+		Vector4(-YSin, 0.0f, YCos, 0.0f),
+		Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	float ZSin, ZCos;
+	Math::SinCos(&ZSin, &ZCos, Rotation.Z);
+	Matrix4x4 ZRotMatrix(
+		Vector4(ZCos, -ZSin, 0.0f, 0.0f),
+		Vector4(ZSin, ZCos, 0.0f, 0.0f),
+		Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+		Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	return XRotMatrix * YRotMatrix * ZRotMatrix;
+}
+
+inline Matrix4x4 Matrix4x4::GetScaleMatrix(const Vector4& Scale)
+{
+	Matrix4x4 ScaleMatrix(
+		Vector4(Scale.X, 0.0f, 0.0f, 0.0f),
+		Vector4(0.0f, Scale.Y, 0.0f, 0.0f),
+		Vector4(0.0f, 0.0f, Scale.Z, 0.0f),
+		Vector4(0.0f, 0.0f, 0.0f, 1.0f));
+
+	return ScaleMatrix;
+}
+
+inline Matrix4x4 Matrix4x4::GetLocationMatrix(const Vector4& Location)
+{
+	Matrix4x4 LocationMatrix(
+		Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+		Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+		Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+		Vector4(Location.X, Location.Y, Location.Z, 1.0f));
+
+	return LocationMatrix;
 }
 
 FORCEINLINE const Vector4& Matrix4x4::operator[](int InIndex) const
@@ -75,7 +132,6 @@ FORCEINLINE Matrix4x4 Matrix4x4::operator*(const Matrix4x4 &InM) const
 		Vector4(tpMat[0].Dot(InM[2]), tpMat[1].Dot(InM[2]), tpMat[2].Dot(InM[2]), tpMat[3].Dot(InM[2])),
 		Vector4(tpMat[0].Dot(InM[3]), tpMat[1].Dot(InM[3]), tpMat[2].Dot(InM[3]), tpMat[3].Dot(InM[3]))
 	);
-
 }
 
 FORCEINLINE Vector4 Matrix4x4::operator*(const Vector4& InV) const

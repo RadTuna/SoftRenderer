@@ -4,7 +4,10 @@
 
 struct InputManager
 {
+	// Axis Input
 	std::function<float()> GetXAxis;
 	std::function<float()> GetYAxis;
-	std::function<bool()> SpacePressed;
+	std::function<float()> MoveForward;
+	std::function<float()> MoveRight;
+	std::function<float()> MoveUp;
 };

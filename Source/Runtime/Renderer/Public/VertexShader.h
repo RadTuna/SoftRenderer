@@ -8,6 +8,13 @@ class VertexShader final
 {
 public:
 
+	struct MatrixBuffer
+	{
+		Matrix4x4 WorldMatrix;
+		Matrix4x4 ViewMatrix;
+		Matrix4x4 ProjectionMatrix;
+	};
+
 	// Structure의 이름은 고정.
 	struct VertexInput
 	{
@@ -19,6 +26,8 @@ public:
 	{
 		Vector4 Position;
 	};
+
+	MatrixBuffer VertexShaderMatrix;
 
 public:
 
@@ -55,7 +64,15 @@ VertexShader::VertexOutput VertexShader::VertexMain(VertexInput InputData)
 {
 	VertexOutput Output;
 
-	Output.Position = InputData.Position;
+	InputData.Position.W = 1.0f;
+
+	Output.Position = VertexShaderMatrix.WorldMatrix * InputData.Position;
+	Output.Position = VertexShaderMatrix.ViewMatrix * Output.Position;
+	Output.Position = VertexShaderMatrix.ProjectionMatrix * Output.Position;
+
+	Output.Position.X /= Output.Position.W;
+	Output.Position.Y /= Output.Position.W;
+	Output.Position.Z /= Output.Position.W;
 
 	return Output;
 }

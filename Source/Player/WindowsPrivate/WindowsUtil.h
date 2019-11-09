@@ -59,6 +59,7 @@ namespace WindowsUtil
 	}
 
 	#define ISPRESSED(KeyCode) (::GetKeyState(KeyCode) & 0x8000) != 0
+	enum { VK_KeyA = 0x41, VK_KeyS = 0x53, VK_KeyD = 0x44, VK_KeyW = 0x57 };
 
 	inline float GetXAxisInput()
 	{
@@ -66,9 +67,9 @@ namespace WindowsUtil
 		bool isRight = GetAsyncKeyState(VK_RIGHT);
 		if (isLeft ^ isRight)
 		{
-			return isLeft ? -1.f : 1.f;
+			return isLeft ? -1.0f : 1.0f;
 		}
-		return 0.f;
+		return 0.0f;
 	}
 
 	inline float GetYAxisInput()
@@ -77,14 +78,42 @@ namespace WindowsUtil
 		bool isUp = GetAsyncKeyState(VK_UP);
 		if (isDown ^ isUp)
 		{
-			return isDown ? -1.f : 1.f;
+			return isDown ? -1.0f : 1.0f;
 		}
-		return 0.f;
+		return 0.0f;
 	}
 
-	inline bool SpacePressedInput()
+	inline float GetForwardInput()
 	{
-		return ISPRESSED(VK_SPACE);
+		bool isForward = GetAsyncKeyState(VK_KeyW);
+		bool isReverse = GetAsyncKeyState(VK_KeyS);
+		if (isForward ^ isReverse)
+		{
+			return isReverse ? -1.0f : 1.0f;
+		}
+		return 0.0f;
+	}
+
+	inline float GetRightInput()
+	{
+		bool isRight = GetAsyncKeyState(VK_KeyD);
+		bool isLeft = GetAsyncKeyState(VK_KeyA);
+		if (isRight ^ isLeft)
+		{
+			return isLeft ? -1.0f : 1.0f;
+		}
+		return 0.0f;
+	}
+
+	inline float GetUpInput()
+	{
+		bool isUp = GetAsyncKeyState(VK_SPACE);
+		bool isDown = GetAsyncKeyState(VK_CONTROL);
+		if (isUp ^ isDown)
+		{
+			return isDown ? -1.0f : 1.0f;
+		}
+		return 0.0f;
 	}
 
 }

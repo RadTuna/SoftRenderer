@@ -18,7 +18,9 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 	renderer.PerformanceMeasureFunc = WindowsUtil::GetCurrentTimeStamp;
 	renderer.GetInputManager().GetXAxis = WindowsUtil::GetXAxisInput;
 	renderer.GetInputManager().GetYAxis = WindowsUtil::GetYAxisInput;
-	renderer.GetInputManager().SpacePressed = WindowsUtil::SpacePressedInput;
+	renderer.GetInputManager().MoveForward = WindowsUtil::GetForwardInput;
+	renderer.GetInputManager().MoveRight = WindowsUtil::GetRightInput;
+	renderer.GetInputManager().MoveUp = WindowsUtil::GetUpInput;
 
 	if (!WindowsPlayer::Create(hInstance, defScreenSize))
 	{
