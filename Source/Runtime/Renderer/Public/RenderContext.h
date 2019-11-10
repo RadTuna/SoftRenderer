@@ -32,7 +32,6 @@ private:
 	std::unique_ptr<VertexShader> mVertexShader;
 	std::unique_ptr<Rasterizer> mRasterizer;
 	std::unique_ptr<FragmentShader> mFragmentShader;
-	std::unique_ptr<OutputMerger> mOutputMerger;
 
 	ScreenPoint ScreenSize;
 	RenderingSoftwareInterface* RSI;

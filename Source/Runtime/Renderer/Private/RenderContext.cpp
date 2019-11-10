@@ -31,12 +31,6 @@ bool RenderContext::Initialize(RenderingSoftwareInterface* InRSI, const ScreenPo
 		return false;
 	}
 
-	mOutputMerger = std::make_unique<OutputMerger>();
-	if (mOutputMerger == nullptr)
-	{
-		return false;
-	}
-
 	return true;
 }
 
