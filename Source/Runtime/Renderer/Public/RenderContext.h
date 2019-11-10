@@ -5,7 +5,6 @@
 #include "VertexShader.h"
 #include "Rasterizer.h"
 #include "FragmentShader.h"
-#include "OutputMerger.h"
 #include "RSIDataTypes.h"
 #include "RenderingSoftwareInterface.h"
 #include "..\Public\ScreenPoint.h"

@@ -52,11 +52,16 @@ void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 		return;
 	}
 
-	if (PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Z > 1.0f)
+	// 3개 버텍스를 기준으로 Z Test를 실시.
+	bool ZTestOne = PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Z > 1.0f || PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Z < 0.0f;
+	bool ZTestTwo = PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Z > 1.0f || PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Z < 0.0f;
+	bool ZTestThree = PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Z > 1.0f || PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Z < 0.0f;
+	if (ZTestOne || ZTestTwo || ZTestThree)
 	{
 		return;
 	}
 
+	// NDC Space에서 ScreenSpace로 변환.
 	for (int i = 0; i < PRIMITIVE_COUNT; ++i)
 	{
 		PrimitiveData[i].Position.X *= ScreenSize.Y;
@@ -79,6 +84,7 @@ void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 		break;
 	}
 
+	// Vertex Sort
 	SortVertexByY(PrimitiveData);
 
 	// Rasterization 기능이 활성화 되어 있으면 실행.
@@ -123,7 +129,7 @@ void Rasterizer::RasterizeBottomFlatPrimitive(const VertexShader::VertexOutput* 
 	Vector4 EndPoint;
 	StartPoint = EndPoint = InPrimitiveData[PRIMITIVE_INDEX_ONE].Position;
 
-	for (int PosY = InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y; PosY >= InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y; --PosY)
+	for (float PosY = InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y; PosY >= InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y; --PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
@@ -141,7 +147,7 @@ void Rasterizer::RasterizeBottomFlatPrimitive(const Vector4& Point1, const Vecto
 	Vector4 EndPoint;
 	StartPoint = EndPoint = Point1;
 
-	for (int PosY = Point1.Y; PosY >= Point2.Y; --PosY)
+	for (float PosY = Point1.Y; PosY >= Point2.Y; --PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
@@ -161,7 +167,7 @@ void Rasterizer::RasterizeTopFlatPrimitive(const VertexShader::VertexOutput* InP
 	Vector4 EndPoint;
 	StartPoint = EndPoint = InPrimitiveData[PRIMITIVE_INDEX_THREE].Position;
 
-	for (int PosY = InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y; PosY <= InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y; ++PosY)
+	for (float PosY = InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y; PosY <= InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y; ++PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
@@ -179,7 +185,7 @@ void Rasterizer::RasterizeTopFlatPrimitive(const Vector4& Point1, const Vector4&
 	Vector4 EndPoint;
 	StartPoint = EndPoint = Point3;
 
-	for (int PosY = Point3.Y; PosY >= Point1.Y; --PosY)
+	for (float PosY = Point3.Y; PosY >= Point1.Y; --PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
