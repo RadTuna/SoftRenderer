@@ -27,10 +27,10 @@ public:
 	FORCEINLINE void GetBaycentricCoodinate(); // WIP
 	FORCEINLINE void GetInterpolratedPrimitive(); // WIP
 	FORCEINLINE void SortVertexByY(VertexShader::VertexOutput* PrimitiveData);
-	FORCEINLINE bool IsFrontNormal(VertexShader::VertexOutput* PrimitivaData);
+	FORCEINLINE bool IsFrontNormal(VertexShader::VertexOutput* PrimitiveData);
 	
 	FORCEINLINE void SetFragmentShaderFunction(void(FragmentShader::*InFragmentShaderFunc)(FragmentShader::FragmentInput*, UINT));
-	FORCEINLINE void SetRasterizerState(const ScreenPoint& InScreenSize, bool InUseGeometryOutline, bool InUseRasterization);
+	FORCEINLINE void SetRasterizerState(const ScreenPoint& InScreenSize, bool InUseGeometryOutline, bool InUseRasterization, CullingMode InCullMode);
 
 private:
 
@@ -41,6 +41,7 @@ private:
 	ScreenPoint ScreenSize;
 	bool UseGeometryOutline = false;
 	bool UseRasterization = true;
+	CullingMode CullMode;
 
 };
 
@@ -56,20 +57,26 @@ void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 		return;
 	}
 
-	Vector2 PrimitiveVector1 = PrimitiveData[PRIMITIVE_INDEX_THREE].Position.ToVector2() - PrimitiveData[PRIMITIVE_INDEX_ONE].Position.ToVector2();
-	Vector2 PrimitiveVector2 = PrimitiveData[PRIMITIVE_INDEX_THREE].Position.ToVector2() - PrimitiveData[PRIMITIVE_INDEX_TWO].Position.ToVector2();
-
-	float PrimitiveZ = (PrimitiveVector1.X * PrimitiveVector2.Y) - (PrimitiveVector1.Y * PrimitiveVector2.X);
-
-	if (PrimitiveZ < 0)
-	{
-		return;
-	}
-
 	for (int i = 0; i < PRIMITIVE_COUNT; ++i)
 	{
 		PrimitiveData[i].Position.X *= ScreenSize.Y;
 		PrimitiveData[i].Position.Y *= ScreenSize.X;
+	}
+
+	switch (CullMode)
+	{
+	case CullingMode::CULL_FRONT:
+		if (IsFrontNormal(PrimitiveData) == true)
+		{
+			return;
+		}
+		break;
+	case CullingMode::CULL_BACK:
+		if (IsFrontNormal(PrimitiveData) == false)
+		{
+			return;
+		}
+		break;
 	}
 
 	SortVertexByY(PrimitiveData);
@@ -281,15 +288,26 @@ void Rasterizer::SortVertexByY(VertexShader::VertexOutput* PrimitiveData)
 	}
 }
 
+inline bool Rasterizer::IsFrontNormal(VertexShader::VertexOutput* PrimitiveData)
+{
+	// 2D Vector에 대해 외적을 하여 Z값을 얻음
+	Vector2 PrimitiveVector1 = PrimitiveData[PRIMITIVE_INDEX_THREE].Position.ToVector2() - PrimitiveData[PRIMITIVE_INDEX_TWO].Position.ToVector2();
+	Vector2 PrimitiveVector2 = PrimitiveData[PRIMITIVE_INDEX_THREE].Position.ToVector2() - PrimitiveData[PRIMITIVE_INDEX_ONE].Position.ToVector2();
+	float PrimitiveZ = (PrimitiveVector1.X * PrimitiveVector2.Y) - (PrimitiveVector1.Y * PrimitiveVector2.X);
+
+	return PrimitiveZ > 0;
+}
+
 void Rasterizer::SetFragmentShaderFunction(void(FragmentShader::* InFragmentShaderFunc)(FragmentShader::FragmentInput*, UINT))
 {
 	FragmentShaderFunc = InFragmentShaderFunc;
 }
 
-void Rasterizer::SetRasterizerState(const ScreenPoint& InScreenSize, bool InUseGeometryOutline, bool InUseRasterization)
+void Rasterizer::SetRasterizerState(const ScreenPoint& InScreenSize, bool InUseGeometryOutline, bool InUseRasterization, CullingMode InCullMode)
 {
 	ScreenSize = InScreenSize;
 	UseGeometryOutline = InUseGeometryOutline;
 	UseRasterization = InUseRasterization;
+	CullMode = InCullMode;
 }
 

@@ -13,6 +13,13 @@ enum class BlendingModes
 	AlphaBlending
 };
 
+enum class CullingMode
+{
+	CULL_NONE,
+	CULL_FRONT,
+	CULL_BACK
+};
+
 using UINT = unsigned __int32;
 
 struct VertexBuffer

@@ -177,7 +177,7 @@ void SoftRenderer::RenderFrame()
 
 void SoftRenderer::SetupRenderParameter()
 {
-	RendererContext->RSSetRasterizeState(true, false);
+	RendererContext->RSSetRasterizeState(true, false, CullingMode::CULL_BACK);
 
 	VertexDataType* Vertices = new VertexDataType[8];
 
@@ -191,11 +191,11 @@ void SoftRenderer::SetupRenderParameter()
 	Vertices[7].Position = Vector4(-10.0f, -10.0f, 10.0f, 0.0f);
 
 	UINT* Indices = new UINT[36]{
-		0, 1, 3, 1, 2, 3,
+		1, 0, 3, 1, 3, 2,
 		0, 1, 4, 1, 5, 4,
 		0, 4, 3, 3, 4, 7,
-		3, 2, 7, 2, 6, 7,
-		2, 5, 6, 2, 1, 5,
+		2, 3, 7, 2, 7, 6,
+		2, 6, 5, 2, 5, 1,
 		4, 5, 7, 5, 6, 7 };
 
 	VertexBuffer* RenderVertexBuffer = nullptr;

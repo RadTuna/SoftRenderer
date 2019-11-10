@@ -19,7 +19,7 @@ public:
 
 	bool Initialize(RenderingSoftwareInterface* InRSI, const ScreenPoint& InScreenSize);
 	FORCEINLINE void DrawCall();
-	FORCEINLINE void RSSetRasterizeState(bool UseOutline, bool UseRasterization);
+	FORCEINLINE void RSSetRasterizeState(bool UseOutline, bool UseRasterization, CullingMode CullMode);
 	FORCEINLINE void IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride);
 	FORCEINLINE void IASetIndexBuffer(IndexBuffer* Buffer, UINT Stride);
 	FORCEINLINE void VSSetMatrixBuffer(void* Buffer);
@@ -63,9 +63,9 @@ void RenderContext::DrawCall()
 
 }
 
-void RenderContext::RSSetRasterizeState(bool UseOutline, bool UseRasterization)
+void RenderContext::RSSetRasterizeState(bool UseOutline, bool UseRasterization, CullingMode CullMode)
 {
-	mRasterizer->SetRasterizerState(ScreenSize, UseOutline, UseRasterization);
+	mRasterizer->SetRasterizerState(ScreenSize, UseOutline, UseRasterization, CullMode);
 }
 
 void RenderContext::IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride)
