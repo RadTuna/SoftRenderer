@@ -16,7 +16,7 @@ public:
 	RenderContext() = default;
 	~RenderContext() = default;
 
-	bool Initialize(RenderingSoftwareInterface* InRSI, const ScreenPoint& InScreenSize);
+	bool Initialize(const std::shared_ptr<RenderingSoftwareInterface>& InRSI, const ScreenPoint& InScreenSize);
 	FORCEINLINE void DrawCall();
 	FORCEINLINE void RSSetRasterizeState(bool UseOutline, bool UseRasterization, CullingMode CullMode);
 	FORCEINLINE void IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride);
@@ -30,20 +30,18 @@ private:
 	std::unique_ptr<InputAssembler> mInputAssembler;
 	std::unique_ptr<VertexShader> mVertexShader;
 	std::unique_ptr<Rasterizer> mRasterizer;
-	std::unique_ptr<FragmentShader> mFragmentShader;
+	std::shared_ptr<FragmentShader> mFragmentShader;
 
-	ScreenPoint ScreenSize;
-	RenderingSoftwareInterface* RSI;
+	ScreenPoint mScreenSize;
+	std::shared_ptr<RenderingSoftwareInterface> mRSI;
 
 };
 
-void RenderContext::DrawCall()
+FORCEINLINE void RenderContext::DrawCall()
 {
 	VertexShader::VertexOutput OutPrimitiveData[PRIMITIVE_COUNT];
 
-	void(FragmentShader:: * InFragmentShaderFunc)(FragmentShader::FragmentInput*, UINT) = nullptr;
-	mFragmentShader->GetProcessFragmentShader(&InFragmentShaderFunc);
-	mRasterizer->SetFragmentShaderFunction(InFragmentShaderFunc);
+	mRasterizer->SetFragmentShader(mFragmentShader);
 
 	UINT NumIndices = mInputAssembler->GetIndexBuffer()->DataSize / mInputAssembler->GetIndexStride();
 	for (UINT IndexOffset = 0; IndexOffset < NumIndices; IndexOffset += PRIMITIVE_COUNT)
@@ -61,22 +59,22 @@ void RenderContext::DrawCall()
 
 }
 
-void RenderContext::RSSetRasterizeState(bool UseOutline, bool UseRasterization, CullingMode CullMode)
+FORCEINLINE void RenderContext::RSSetRasterizeState(bool UseOutline, bool UseRasterization, CullingMode CullMode)
 {
-	mRasterizer->SetRasterizerState(ScreenSize, UseOutline, UseRasterization, CullMode);
+	mRasterizer->SetRasterizerState(mScreenSize, UseOutline, UseRasterization, CullMode);
 }
 
-void RenderContext::IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride)
+FORCEINLINE void RenderContext::IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride)
 {
 	mInputAssembler->SetVertexBuffer(Buffer, Stride);
 }
 
-void RenderContext::IASetIndexBuffer(IndexBuffer* Buffer, UINT Stride)
+FORCEINLINE void RenderContext::IASetIndexBuffer(IndexBuffer* Buffer, UINT Stride)
 {
 	mInputAssembler->SetIndexBuffer(Buffer, Stride);
 }
 
-void RenderContext::VSSetMatrixBuffer(void* Buffer)
+FORCEINLINE void RenderContext::VSSetMatrixBuffer(void* Buffer)
 {
 	if (Buffer == nullptr)
 	{

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cassert>
+
 #include "RSIDataTypes.h"
 #include "VertexShader.h"
 #include "FragmentShader.h"
@@ -11,7 +13,11 @@ class Rasterizer final
 {
 public:
 
-	Rasterizer(RenderingSoftwareInterface* InRSI) : RSI(InRSI), FragmentShaderFunc(nullptr) {}
+	Rasterizer(const std::shared_ptr<RenderingSoftwareInterface>& InRSI) 
+		: mRSI(InRSI)
+		, mCurrentPrimitiveData(nullptr)
+		, mCullMode(CullingMode::CULL_BACK)
+	{}
 	~Rasterizer() = default;
 
 	FORCEINLINE void Rasterize(VertexShader::VertexOutput* PrimitiveData);
@@ -21,31 +27,42 @@ public:
 	FORCEINLINE void RasterizeTopFlatPrimitive(const VertexShader::VertexOutput* InPrimitiveData);
 	FORCEINLINE void RasterizeTopFlatPrimitive(const Vector4& Point1, const Vector4& Point2, const Vector4& Point3);
 
-	FORCEINLINE void WriteFlatLine(const Vector4& StartPoint, const Vector4& EndPoint); // WIP
+	FORCEINLINE void WriteFlatLine(const Vector4& StartPoint, const Vector4& EndPoint);
 	FORCEINLINE void WriteGeometryOutline(const Vector4& StartPoint, const Vector4& EndPoint);
 
-	FORCEINLINE void GetBaycentricCoodinate(); // WIP
-	FORCEINLINE void GetInterpolratedPrimitive(); // WIP
+	FORCEINLINE void GetBaycentricCoodinate(const Vector2& InPosition, Vector3& OutCoord);
+	FORCEINLINE void GetInterpolratedFragment(const Vector2& InPosition, FragmentShader::FragmentInput* OutPrimitive);
 	FORCEINLINE void SortVertexByY(VertexShader::VertexOutput* PrimitiveData);
 	FORCEINLINE bool IsFrontNormal(VertexShader::VertexOutput* PrimitiveData);
+	FORCEINLINE void CalculrateCachedDotProduct();
 	
-	FORCEINLINE void SetFragmentShaderFunction(void(FragmentShader::*InFragmentShaderFunc)(FragmentShader::FragmentInput*, UINT));
 	FORCEINLINE void SetRasterizerState(const ScreenPoint& InScreenSize, bool InUseGeometryOutline, bool InUseRasterization, CullingMode InCullMode);
+	FORCEINLINE void SetFragmentShader(const std::shared_ptr<FragmentShader>& InFragShader);
 
 private:
 
-	// FragmentShader ProcessFunction;
-	void(FragmentShader::*FragmentShaderFunc)(FragmentShader::FragmentInput*, UINT);
+	std::shared_ptr<FragmentShader> mFragmentShader;
 
-	RenderingSoftwareInterface* RSI;
-	ScreenPoint ScreenSize;
-	bool UseGeometryOutline = false;
-	bool UseRasterization = true;
-	CullingMode CullMode;
+	std::shared_ptr<RenderingSoftwareInterface> mRSI;
+	VertexShader::VertexOutput* mCurrentPrimitiveData;
+
+	ScreenPoint mScreenSize;
+	Vector2 ScreenLimit;
+	bool bUseGeometryOutline = false;
+	bool bUseRasterization = true;
+	CullingMode mCullMode;
+
+	Vector4 mPrimitiveVectorU;
+	Vector4 mPrimitiveVectorV;
+	Vector4 mPrimitiveVectorW;
+	float mDotUU = 0.0f;
+	float mDotUV = 0.0f;
+	float mDotVV = 0.0f;
+	float mDenominator = 0.0f;
 
 };
 
-void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
+FORCEINLINE void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 {
 	if (PrimitiveData == nullptr)
 	{
@@ -64,11 +81,11 @@ void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 	// NDC Space에서 ScreenSpace로 변환.
 	for (int i = 0; i < PRIMITIVE_COUNT; ++i)
 	{
-		PrimitiveData[i].Position.X *= ScreenSize.Y;
-		PrimitiveData[i].Position.Y *= ScreenSize.X;
+		PrimitiveData[i].Position.X *= mScreenSize.Y;
+		PrimitiveData[i].Position.Y *= mScreenSize.X;
 	}
 
-	switch (CullMode)
+	switch (mCullMode)
 	{
 	case CullingMode::CULL_FRONT:
 		if (IsFrontNormal(PrimitiveData) == true)
@@ -87,9 +104,15 @@ void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 	// Vertex Sort
 	SortVertexByY(PrimitiveData);
 
+	// Allocate Current Primitive
+	mCurrentPrimitiveData = PrimitiveData;
+
 	// Rasterization 기능이 활성화 되어 있으면 실행.
-	if (UseRasterization == true)
+	if (bUseRasterization == true)
 	{
+		// Calculrate Dotproduct Cache
+		CalculrateCachedDotProduct();
+
 		if (Math::IsNearlyFloat(PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y, PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y) == true)
 		{
 			RasterizeTopFlatPrimitive(PrimitiveData);
@@ -101,8 +124,8 @@ void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 		else
 		{
 			Vector4 NewPosition;
-			NewPosition.X = PrimitiveData[PRIMITIVE_INDEX_TWO].Position.X;
-			NewPosition.Y = (PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y - PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y) / (PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y)
+			NewPosition.Y = PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y;
+			NewPosition.X = (PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y - PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y) / (PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y)
 				* (PrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - PrimitiveData[PRIMITIVE_INDEX_ONE].Position.X) + PrimitiveData[PRIMITIVE_INDEX_ONE].Position.X;
 			RasterizeTopFlatPrimitive(PrimitiveData[PRIMITIVE_INDEX_TWO].Position, NewPosition, PrimitiveData[PRIMITIVE_INDEX_THREE].Position);
 			RasterizeBottomFlatPrimitive(PrimitiveData[PRIMITIVE_INDEX_ONE].Position, PrimitiveData[PRIMITIVE_INDEX_TWO].Position, NewPosition);
@@ -110,7 +133,7 @@ void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 	}
 
 	// GeometryOutline 기능이 활성화 되어 있으면 실행.
-	if (UseGeometryOutline == true)
+	if (bUseGeometryOutline == true)
 	{
 		WriteGeometryOutline(PrimitiveData[PRIMITIVE_INDEX_ONE].Position, PrimitiveData[PRIMITIVE_INDEX_TWO].Position);
 		WriteGeometryOutline(PrimitiveData[PRIMITIVE_INDEX_TWO].Position, PrimitiveData[PRIMITIVE_INDEX_THREE].Position);
@@ -118,12 +141,12 @@ void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData)
 	}
 }
 
-void Rasterizer::RasterizeBottomFlatPrimitive(const VertexShader::VertexOutput* InPrimitiveData)
+FORCEINLINE void Rasterizer::RasterizeBottomFlatPrimitive(const VertexShader::VertexOutput* InPrimitiveData)
 {
-	float SlopeL = (InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.X) /
-		(InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y);
-	float SlopeR = (InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X) /
-		(InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y);
+	float SlopeL = (InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.X - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X)
+		/ (InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
+	float SlopeR = (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X)
+		/ (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
 
 	Vector4 StartPoint;
 	Vector4 EndPoint;
@@ -133,15 +156,17 @@ void Rasterizer::RasterizeBottomFlatPrimitive(const VertexShader::VertexOutput* 
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
-		StartPoint.X += SlopeL;
-		EndPoint.X += SlopeR;
+		StartPoint.X -= SlopeL;
+		EndPoint.X -= SlopeR;
+		--StartPoint.Y;
+		--EndPoint.Y;
 	}
 }
 
-void Rasterizer::RasterizeBottomFlatPrimitive(const Vector4& Point1, const Vector4& Point2, const Vector4& Point3)
+FORCEINLINE void Rasterizer::RasterizeBottomFlatPrimitive(const Vector4& Point1, const Vector4& Point2, const Vector4& Point3)
 {
-	float SlopeL = (Point1.X - Point2.X) / (Point1.Y - Point2.Y);
-	float SlopeR = (Point1.X - Point3.X) / (Point1.Y - Point3.Y);
+	float SlopeL = (Point2.X - Point1.X) / (Point2.Y - Point1.Y);
+	float SlopeR = (Point3.X - Point1.X) / (Point3.Y - Point1.Y);
 
 	Vector4 StartPoint;
 	Vector4 EndPoint;
@@ -151,17 +176,19 @@ void Rasterizer::RasterizeBottomFlatPrimitive(const Vector4& Point1, const Vecto
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
-		StartPoint.X += SlopeL;
-		EndPoint.X += SlopeR;
+		StartPoint.X -= SlopeL;
+		EndPoint.X -= SlopeR;
+		--StartPoint.Y;
+		--EndPoint.Y;
 	}
 }
 
-void Rasterizer::RasterizeTopFlatPrimitive(const VertexShader::VertexOutput* InPrimitiveData)
+FORCEINLINE void Rasterizer::RasterizeTopFlatPrimitive(const VertexShader::VertexOutput* InPrimitiveData)
 {
-	float SlopeL = (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X) /
-		(InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
-	float SlopeR = (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.X) /
-		(InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y);
+	float SlopeL = (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X)
+		/ (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
+	float SlopeR = (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.X)
+		/ (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y);
 
 	Vector4 StartPoint;
 	Vector4 EndPoint;
@@ -173,10 +200,12 @@ void Rasterizer::RasterizeTopFlatPrimitive(const VertexShader::VertexOutput* InP
 
 		StartPoint.X += SlopeL;
 		EndPoint.X += SlopeR;
+		++StartPoint.Y;
+		++EndPoint.Y;
 	}
 }
 
-void Rasterizer::RasterizeTopFlatPrimitive(const Vector4& Point1, const Vector4& Point2, const Vector4& Point3)
+FORCEINLINE void Rasterizer::RasterizeTopFlatPrimitive(const Vector4& Point1, const Vector4& Point2, const Vector4& Point3)
 {
 	float SlopeL = (Point3.X - Point1.X) / (Point3.Y - Point1.Y);
 	float SlopeR = (Point3.X - Point2.X) / (Point3.Y - Point2.Y);
@@ -185,28 +214,39 @@ void Rasterizer::RasterizeTopFlatPrimitive(const Vector4& Point1, const Vector4&
 	Vector4 EndPoint;
 	StartPoint = EndPoint = Point3;
 
-	for (float PosY = Point3.Y; PosY >= Point1.Y; --PosY)
+	for (float PosY = Point3.Y; PosY <= Point1.Y; ++PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
 		StartPoint.X += SlopeL;
 		EndPoint.X += SlopeR;
+		++StartPoint.Y;
+		++EndPoint.Y;
 	}
 }
 
-void Rasterizer::WriteFlatLine(const Vector4& StartPoint, const Vector4& EndPoint)
+FORCEINLINE void Rasterizer::WriteFlatLine(const Vector4& StartPoint, const Vector4& EndPoint)
 {
 	// Draw FlatLine;
-	// Not Implemented;
+	float EndX = Math::Max(StartPoint.X, EndPoint.X);
+	for (float PosX = Math::Min(StartPoint.X, EndPoint.X); PosX <= EndX; ++PosX)
+	{
+		if (PosX < -ScreenLimit.X || PosX > ScreenLimit.X || StartPoint.Y < -ScreenLimit.Y || StartPoint.Y > ScreenLimit.Y)
+		{
+			continue;
+		}
+
+		Vector2 CurrentPosition(PosX, StartPoint.Y);
+
+		FragmentShader::FragmentInput FragmentData;
+		GetInterpolratedFragment(CurrentPosition, &FragmentData);
+		mFragmentShader->ProcessFragmentShader(FragmentData);
+	}
 }
 
-void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, const Vector4& EndPoint)
+FORCEINLINE void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, const Vector4& EndPoint)
 {
-	ScreenPoint CurrentPoint = ScreenPoint::ToScreenCoordinate(ScreenSize, StartPoint.ToVector2());
-	int XMin = 0;
-	int XMax = ScreenSize.X;
-	int YMin = 0;
-	int YMax = ScreenSize.Y;
+	ScreenPoint CurrentPoint = ScreenPoint::ToScreenCoordinate(mScreenSize, StartPoint.ToVector2());
 
 	// Tempolary Code
 	LinearColor OutlineColor = LinearColor::Red;
@@ -228,9 +268,9 @@ void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, const Vector4& 
 	for (int CurX = 0; CurX < DeltaX; ++CurX)
 	{
 		// Out Boarder Exception
-		if (CurrentPoint.X > XMin&& CurrentPoint.X < XMax && CurrentPoint.Y > YMin&& CurrentPoint.Y < YMax)
+		if (CurrentPoint.X >= 0 && CurrentPoint.X <= mScreenSize.X && CurrentPoint.Y >= 0 && CurrentPoint.Y <= mScreenSize.Y)
 		{
-			RSI->DrawPoint(CurrentPoint, OutlineColor);
+			mRSI->DrawPoint(CurrentPoint, OutlineColor);
 		}
 
 		if (Judge >= 0)
@@ -261,22 +301,40 @@ void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, const Vector4& 
 }
 
 
-void Rasterizer::GetBaycentricCoodinate()
+FORCEINLINE void Rasterizer::GetBaycentricCoodinate(const Vector2& InPosition, Vector3& OutCoord)
 {
 	// Calculrate BaycentiricCoodinate;
-	// Not Implemented;
+	mPrimitiveVectorW = InPosition - mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].Position.ToVector2();
+	mPrimitiveVectorW.Z = mPrimitiveVectorW.W = 0.0f;
+
+	OutCoord.Y = (mPrimitiveVectorW.Dot(mPrimitiveVectorU) * mDotVV - mPrimitiveVectorW.Dot(mPrimitiveVectorV) * mDotUV) / mDenominator;
+	OutCoord.Z = (mPrimitiveVectorW.Dot(mPrimitiveVectorV) * mDotUU - mPrimitiveVectorW.Dot(mPrimitiveVectorU) * mDotUV) / mDenominator;
+	OutCoord.X = 1.0f - OutCoord.Y - OutCoord.Z;
 }
 
-void Rasterizer::GetInterpolratedPrimitive()
+FORCEINLINE void Rasterizer::GetInterpolratedFragment(const Vector2& InPosition, FragmentShader::FragmentInput* OutPrimitive)
 {
 	// return InterpolratedPrimitive;
-	// Not Implemented;
+	Vector3 BaycentricWeight;
+	GetBaycentricCoodinate(InPosition, BaycentricWeight);
+
+	// Do not Interpolrate
+	OutPrimitive->Position = InPosition;
+
+	// Interpolrate
+	OutPrimitive->WorldPosition = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].WorldPosition * BaycentricWeight.X
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].WorldPosition * BaycentricWeight.Y
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].WorldPosition * BaycentricWeight.Z;
+
+	OutPrimitive->WorldNormal = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].WorldNormal * BaycentricWeight.X
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].WorldNormal * BaycentricWeight.Y
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].WorldNormal * BaycentricWeight.Z;
 }
 
-void Rasterizer::SortVertexByY(VertexShader::VertexOutput* PrimitiveData)
+FORCEINLINE void Rasterizer::SortVertexByY(VertexShader::VertexOutput* PrimitiveData)
 {
-	if ((PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y >= PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y) &&
-		(PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y >= PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y))
+	if ((PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y <= PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y) ||
+		(PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y <= PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y))
 	{
 		if (PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y > PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y)
 		{
@@ -294,7 +352,7 @@ void Rasterizer::SortVertexByY(VertexShader::VertexOutput* PrimitiveData)
 	}
 }
 
-inline bool Rasterizer::IsFrontNormal(VertexShader::VertexOutput* PrimitiveData)
+FORCEINLINE bool Rasterizer::IsFrontNormal(VertexShader::VertexOutput* PrimitiveData)
 {
 	// 2D Vector에 대해 외적을 하여 Z값을 얻음
 	Vector2 PrimitiveVector1 = PrimitiveData[PRIMITIVE_INDEX_THREE].Position.ToVector2() - PrimitiveData[PRIMITIVE_INDEX_TWO].Position.ToVector2();
@@ -304,16 +362,34 @@ inline bool Rasterizer::IsFrontNormal(VertexShader::VertexOutput* PrimitiveData)
 	return PrimitiveZ > 0;
 }
 
-void Rasterizer::SetFragmentShaderFunction(void(FragmentShader::* InFragmentShaderFunc)(FragmentShader::FragmentInput*, UINT))
+FORCEINLINE void Rasterizer::CalculrateCachedDotProduct()
 {
-	FragmentShaderFunc = InFragmentShaderFunc;
+	mPrimitiveVectorU = (mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].Position - mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].Position);
+	mPrimitiveVectorV = (mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].Position - mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].Position);
+	mPrimitiveVectorU.Z = mPrimitiveVectorU.W = 0.0f;
+	mPrimitiveVectorV.Z = mPrimitiveVectorV.W = 0.0f;
+
+	mDotUU = mPrimitiveVectorU.Dot(mPrimitiveVectorU);
+	mDotUV = mPrimitiveVectorU.Dot(mPrimitiveVectorV);
+	mDotVV = mPrimitiveVectorV.Dot(mPrimitiveVectorV);
+
+	mDenominator = (mDotUU * mDotVV) - (mDotUV * mDotUV);
 }
 
-void Rasterizer::SetRasterizerState(const ScreenPoint& InScreenSize, bool InUseGeometryOutline, bool InUseRasterization, CullingMode InCullMode)
+
+FORCEINLINE void Rasterizer::SetRasterizerState(const ScreenPoint& InScreenSize, bool InUseGeometryOutline, bool InUseRasterization, CullingMode InCullMode)
 {
-	ScreenSize = InScreenSize;
-	UseGeometryOutline = InUseGeometryOutline;
-	UseRasterization = InUseRasterization;
-	CullMode = InCullMode;
+	mScreenSize = InScreenSize;
+	bUseGeometryOutline = InUseGeometryOutline;
+	bUseRasterization = InUseRasterization;
+	mCullMode = InCullMode;
+
+	ScreenLimit.X = mScreenSize.X * 0.5f;
+	ScreenLimit.Y = mScreenSize.Y * 0.5f;
+}
+
+FORCEINLINE void Rasterizer::SetFragmentShader(const std::shared_ptr<FragmentShader>& InFragShader)
+{
+	mFragmentShader = InFragShader;
 }
 

@@ -3,12 +3,14 @@
 #include "CoreDefinition.h"
 #include "Color32.h"
 #include "Math.h"
+#include "Vector4.h"
 
 struct LinearColor
 {
 public:
 	FORCEINLINE LinearColor() {}
 	constexpr FORCEINLINE LinearColor(float InR, float InG, float InB, float InA = 1.f) : R(InR), G(InG), B(InB), A(InA) {}
+	LinearColor(const Vector4& InColor) : R(InColor.X), G(InColor.Y), B(InColor.Z), A(InColor.W) {}
 	LinearColor(const Color32& InColor32, const bool bSRGB = false);
 
 	FORCEINLINE bool EqualsInRange(const LinearColor& InColor, float InRange) const;

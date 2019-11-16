@@ -54,6 +54,7 @@ private:
 	struct VertexDataType
 	{
 		Vector4 Position;
+		Vector3 Normal;
 	};
 
 	struct MatrixBufferType
@@ -85,7 +86,7 @@ private:
 	float FrameFPS = 0.f;
 
 	// Renderer Interface
-	std::unique_ptr<RenderingSoftwareInterface> RSI;
+	std::shared_ptr<RenderingSoftwareInterface> RSI;
 
 	// Rebderer Handler
 	std::unique_ptr<RenderContext> RendererContext;
@@ -122,6 +123,8 @@ void SoftRenderer::Update()
 
 	float MoveSensivity = 100.0f;
 	float RotateSensivity = 50.0f;
+
+	CalculrateOrthographicMatrix(Matrix4x4());
 
 	// CameraLocation
 	CameraLocation.Z += InputManager.MoveForward() * DeltaSeconde * MoveSensivity;
@@ -163,6 +166,9 @@ void SoftRenderer::RenderFrame()
 	float DeltaTime = FrameTime / 1000.0f;
 	MeshRotation += DeltaTime * 5000.0f;
 
+	// Stop Rotation Code
+	//MeshRotation = 0.0f;
+
 	MatrixBufferType* MatrixBuffer = new MatrixBufferType;
 	MatrixBuffer->WorldMatrix = Matrix4x4::GetRotationMatrix(Vector4(0.0f, Math::Deg2Rad(MeshRotation), 0.0f, 0.0f));
 
@@ -182,20 +188,31 @@ void SoftRenderer::RenderFrame()
 
 void SoftRenderer::SetupRenderParameter()
 {
-	RendererContext->RSSetRasterizeState(true, false, CullingMode::CULL_BACK);
+	RendererContext->RSSetRasterizeState(false, true, CullingMode::CULL_NONE);
 
-	VertexDataType* Vertices = new VertexDataType[8];
+	UINT VertexBufferLength = 8;
+	UINT IndexBufferLength = 36;
+
+	VertexDataType* Vertices = new VertexDataType[VertexBufferLength];
 
 	Vertices[0].Position = Vector4(-10.0f, 10.0f, -10.0f, 0.0f);
+	Vertices[0].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 	Vertices[1].Position = Vector4(10.0f, 10.0f, -10.0f, 0.0f);
+	Vertices[1].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 	Vertices[2].Position = Vector4(10.0f, 10.0f, 10.0f, 0.0f);
+	Vertices[2].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 	Vertices[3].Position = Vector4(-10.0f, 10.0f, 10.0f, 0.0f);
+	Vertices[3].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 	Vertices[4].Position = Vector4(-10.0f, -10.0f, -10.0f, 0.0f);
+	Vertices[4].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 	Vertices[5].Position = Vector4(10.0f, -10.0f, -10.0f, 0.0f);
+	Vertices[5].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 	Vertices[6].Position = Vector4(10.0f, -10.0f, 10.0f, 0.0f);
+	Vertices[6].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 	Vertices[7].Position = Vector4(-10.0f, -10.0f, 10.0f, 0.0f);
+	Vertices[7].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 
-	UINT* Indices = new UINT[36]{
+	UINT* Indices = new UINT[IndexBufferLength]{
 		1, 0, 3, 1, 3, 2,
 		0, 1, 4, 1, 5, 4,
 		0, 4, 3, 3, 4, 7,
@@ -203,11 +220,12 @@ void SoftRenderer::SetupRenderParameter()
 		2, 6, 5, 2, 5, 1,
 		4, 5, 7, 5, 6, 7 };
 
+
 	VertexBuffer* RenderVertexBuffer = nullptr;
-	RendererFactory->CreateVertexBuffer(sizeof(VertexDataType) * 8, Vertices, &RenderVertexBuffer);
+	RendererFactory->CreateVertexBuffer(sizeof(VertexDataType) * VertexBufferLength, Vertices, &RenderVertexBuffer);
 
 	IndexBuffer* RenderIndexBuffer = nullptr;
-	RendererFactory->CreateIndexBuffer(sizeof(UINT) * 36, Indices, &RenderIndexBuffer);
+	RendererFactory->CreateIndexBuffer(sizeof(UINT) * IndexBufferLength, Indices, &RenderIndexBuffer);
 
 	RendererContext->IASetVertexBuffer(RenderVertexBuffer, sizeof(VertexDataType));
 	RendererContext->IASetIndexBuffer(RenderIndexBuffer, sizeof(UINT));
@@ -310,4 +328,5 @@ void SoftRenderer::CalculrateProjectionMatrix(Matrix4x4& ProjectionMatrix, float
 
 	ProjectionMatrix = GenProjectionMatrix;
 }
+
 

@@ -12,6 +12,7 @@ public:
 
 	FORCEINLINE float SizeSquared() const;
 	FORCEINLINE float Dot(const Vector4& InV) const;
+	FORCEINLINE float Dot(const Vector3& InV) const;
 	FORCEINLINE bool IsZero() const
 	{
 		return X == 0.f && Y == 0.f && Z == 0.f && W == 0.f;
@@ -84,6 +85,11 @@ FORCEINLINE float Vector4::SizeSquared() const
 FORCEINLINE float Vector4::Dot(const Vector4& InV) const
 {
 	return X * InV.X + Y * InV.Y + Z * InV.Z + W * InV.W;
+}
+
+FORCEINLINE float Vector4::Dot(const Vector3& InV) const
+{
+	return X * InV.X + Y * InV.Y + Z * InV.Z;
 }
 
 FORCEINLINE Vector2 Vector4::ToVector2() const

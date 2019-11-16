@@ -2,10 +2,10 @@
 #include "Precompiled.h"
 #include "..\Public\RenderContext.h"
 
-bool RenderContext::Initialize(RenderingSoftwareInterface* InRSI, const ScreenPoint& InScreenSize)
+bool RenderContext::Initialize(const std::shared_ptr<RenderingSoftwareInterface>& InRSI, const ScreenPoint& InScreenSize)
 {
-	ScreenSize = InScreenSize;
-	RSI = InRSI;
+	mScreenSize = InScreenSize;
+	mRSI = InRSI;
 
 	mInputAssembler = std::make_unique<InputAssembler>();
 	if (mInputAssembler == nullptr)
@@ -19,13 +19,13 @@ bool RenderContext::Initialize(RenderingSoftwareInterface* InRSI, const ScreenPo
 		return false;
 	}
 
-	mRasterizer = std::make_unique<Rasterizer>(RSI);
+	mRasterizer = std::make_unique<Rasterizer>(mRSI);
 	if (mRasterizer == nullptr)
 	{
 		return false;
 	}
 
-	mFragmentShader = std::make_unique<FragmentShader>();
+	mFragmentShader = std::make_shared<FragmentShader>(mRSI, mScreenSize);
 	if (mFragmentShader == nullptr)
 	{
 		return false;

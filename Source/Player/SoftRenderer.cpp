@@ -7,6 +7,8 @@ SoftRenderer::SoftRenderer(RenderingSoftwareInterface* InRSI) : RSI(InRSI)
 {
 	RendererContext = std::make_unique<RenderContext>();
 	RendererFactory = std::make_unique<RenderFactory>();
+
+	CameraLocation = Vector4(0.0f, 0.0f, -200.0f, 0.0f);
 }
 
 void SoftRenderer::OnTick()
@@ -34,7 +36,7 @@ void SoftRenderer::OnTick()
 		{
 			return;
 		}
-		if (RendererContext->Initialize(RSI.get(), CurrentScreenSize) == false)
+		if (RendererContext->Initialize(RSI, CurrentScreenSize) == false)
 		{
 			return;
 		}
@@ -74,5 +76,9 @@ void SoftRenderer::OnResize(const ScreenPoint& InNewScreenSize)
 void SoftRenderer::Shutdown()
 {
 	RSI->Shutdown();
+}
+
+void SoftRenderer::CalculrateOrthographicMatrix(Matrix4x4& OrthographicMatrix)
+{
 }
 

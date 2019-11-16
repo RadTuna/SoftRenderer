@@ -50,7 +50,7 @@ void InputAssembler::SetIndexBuffer(IndexBuffer* InBuffer, UINT InStride)
 	mIndexStride = InStride;
 }
 
-inline void InputAssembler::ClearVertexBuffer()
+FORCEINLINE void InputAssembler::ClearVertexBuffer()
 {
 	if (mVertexBuffer != nullptr)
 	{
@@ -66,7 +66,7 @@ inline void InputAssembler::ClearVertexBuffer()
 	mVertexStride = 0;
 }
 
-inline void InputAssembler::ClearIndexBuffer()
+FORCEINLINE void InputAssembler::ClearIndexBuffer()
 {
 	if (mIndexBuffer != nullptr)
 	{
@@ -82,7 +82,7 @@ inline void InputAssembler::ClearIndexBuffer()
 	mIndexStride = 0;
 }
 
-void InputAssembler::ClearBuffers()
+FORCEINLINE void InputAssembler::ClearBuffers()
 {
 	ClearVertexBuffer();
 	ClearIndexBuffer();
