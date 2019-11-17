@@ -318,10 +318,10 @@ FORCEINLINE void Rasterizer::GetInterpolratedFragment(const Vector2& InPosition,
 	Vector3 BaycentricWeight;
 	GetBaycentricCoodinate(InPosition, BaycentricWeight);
 
-	// Do not Interpolrate
+	// Do not Interpolrated
 	OutPrimitive->Position = InPosition;
 
-	// Interpolrate
+	// Interpolrated
 	OutPrimitive->WorldPosition = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].WorldPosition * BaycentricWeight.X
 		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].WorldPosition * BaycentricWeight.Y
 		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].WorldPosition * BaycentricWeight.Z;

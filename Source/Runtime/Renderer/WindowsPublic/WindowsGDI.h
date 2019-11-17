@@ -13,6 +13,7 @@ public:
 	~WindowsGDI();
 
 public:
+
 	bool InitializeGDI(const ScreenPoint& InScreenSize);
 	void ReleaseGDI();
 

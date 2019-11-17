@@ -3,12 +3,12 @@
 #include "SoftRenderer.h"
 #include "RSIDataTypes.h"
 
-SoftRenderer::SoftRenderer(RenderingSoftwareInterface* InRSI) : RSI(InRSI)
+SoftRenderer::SoftRenderer()
 {
-	RendererContext = std::make_unique<RenderContext>();
-	RendererFactory = std::make_unique<RenderFactory>();
+	mRendererContext = std::make_unique<RenderContext>();
+	mRendererFactory = std::make_unique<RenderFactory>();
 
-	CameraLocation = Vector4(0.0f, 0.0f, -200.0f, 0.0f);
+	mCameraLocation = Vector4(0.0f, 0.0f, -200.0f, 0.0f);
 }
 
 void SoftRenderer::OnTick()
@@ -32,11 +32,7 @@ void SoftRenderer::OnTick()
 		{
 			return;
 		}
-		if (!RSI->Init(CurrentScreenSize))
-		{
-			return;
-		}
-		if (RendererContext->Initialize(RSI, CurrentScreenSize) == false)
+		if (mRendererContext->Initialize(CurrentScreenSize) == false)
 		{
 			return;
 		}
@@ -44,7 +40,7 @@ void SoftRenderer::OnTick()
 		IsRendererInitialized = true;
 
 		// Check Input Binding
-		if (InputManager.GetXAxis && InputManager.GetYAxis && InputManager.MoveForward && InputManager.MoveRight && InputManager.MoveUp)
+		if (mInputManager.GetXAxis && mInputManager.GetYAxis && mInputManager.MoveForward && mInputManager.MoveRight && mInputManager.MoveUp)
 		{
 			IsInputInitialized = true;
 		}
@@ -69,13 +65,13 @@ void SoftRenderer::OnResize(const ScreenPoint& InNewScreenSize)
 
 	if (IsRendererInitialized)
 	{
-		RSI->Init(InNewScreenSize);
+		mRendererContext->Initialize(InNewScreenSize);
 	}
 }
 
 void SoftRenderer::Shutdown()
 {
-	RSI->Shutdown();
+	mRendererContext->Shutdown();
 }
 
 void SoftRenderer::CalculrateOrthographicMatrix(Matrix4x4& OrthographicMatrix)

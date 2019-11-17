@@ -1,36 +1,46 @@
 
 #include "Precompiled.h"
 #include "..\Public\RenderContext.h"
+#include "WindowsRSI.h"
 
-bool RenderContext::Initialize(const std::shared_ptr<RenderingSoftwareInterface>& InRSI, const ScreenPoint& InScreenSize)
+
+RenderContext::RenderContext()
 {
-	mScreenSize = InScreenSize;
-	mRSI = InRSI;
+	#ifdef _WINDOWS_RENDERING_INTERFACE
+	mRSI = std::make_shared<WindowsRSI>();
+	#endif
+	assert(mRSI);
 
 	mInputAssembler = std::make_unique<InputAssembler>();
-	if (mInputAssembler == nullptr)
-	{
-		return false;
-	}
+	assert(mInputAssembler);
 
 	mVertexShader = std::make_unique<VertexShader>();
-	if (mVertexShader == nullptr)
-	{
-		return false;
-	}
+	assert(mVertexShader);
 
 	mRasterizer = std::make_unique<Rasterizer>(mRSI);
-	if (mRasterizer == nullptr)
-	{
-		return false;
-	}
+	assert(mRasterizer);
+}
+
+bool RenderContext::Initialize(const ScreenPoint& InScreenSize)
+{
+	bool result = false;
+
+	mScreenSize = InScreenSize;
 
 	mFragmentShader = std::make_shared<FragmentShader>(mRSI, mScreenSize);
-	if (mFragmentShader == nullptr)
+	assert(mFragmentShader);
+
+	result = mRSI->Init(mScreenSize);
+	if (result == false)
 	{
 		return false;
 	}
 
 	return true;
+}
+
+void RenderContext::Shutdown()
+{
+	mRSI->Shutdown();
 }
 

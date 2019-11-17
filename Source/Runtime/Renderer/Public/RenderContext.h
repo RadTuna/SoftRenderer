@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <cassert>
+
 #include "InputAssembler.h"
 #include "VertexShader.h"
 #include "Rasterizer.h"
@@ -13,15 +15,22 @@ class RenderContext final
 {
 public:
 
-	RenderContext() = default;
+	RenderContext();
 	~RenderContext() = default;
 
-	bool Initialize(const std::shared_ptr<RenderingSoftwareInterface>& InRSI, const ScreenPoint& InScreenSize);
+	bool Initialize(const ScreenPoint& InScreenSize);
+	void Shutdown();
+
 	FORCEINLINE void DrawCall();
+	FORCEINLINE void Represent();
+	FORCEINLINE void ClearBackbuffer(const LinearColor& ClearColor);
+
 	FORCEINLINE void RSSetRasterizeState(bool UseOutline, bool UseRasterization, CullingMode CullMode);
 	FORCEINLINE void IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride);
 	FORCEINLINE void IASetIndexBuffer(IndexBuffer* Buffer, UINT Stride);
 	FORCEINLINE void VSSetMatrixBuffer(void* Buffer);
+
+	FORCEINLINE void DrawGrid2D();
 
 private:
 
@@ -59,6 +68,18 @@ FORCEINLINE void RenderContext::DrawCall()
 
 }
 
+FORCEINLINE void RenderContext::Represent()
+{
+	// Buffer Swap;
+	mRSI->BufferSwap();
+}
+
+FORCEINLINE void RenderContext::ClearBackbuffer(const LinearColor& ClearColor)
+{
+	// Clear Buffer;
+	mRSI->Clear(ClearColor);
+}
+
 FORCEINLINE void RenderContext::RSSetRasterizeState(bool UseOutline, bool UseRasterization, CullingMode CullMode)
 {
 	mRasterizer->SetRasterizerState(mScreenSize, UseOutline, UseRasterization, CullMode);
@@ -86,5 +107,38 @@ FORCEINLINE void RenderContext::VSSetMatrixBuffer(void* Buffer)
 	mVertexShader->VertexShaderMatrix.WorldMatrix = pMatrixBuffer->WorldMatrix;
 	mVertexShader->VertexShaderMatrix.ViewMatrix = pMatrixBuffer->ViewMatrix;
 	mVertexShader->VertexShaderMatrix.ProjectionMatrix = pMatrixBuffer->ProjectionMatrix;
+}
+
+FORCEINLINE void RenderContext::DrawGrid2D()
+{
+	const static int Grid2DUnit = 10;
+
+	// Colors to use
+	LinearColor gridColor(LinearColor(0.8f, 0.8f, 0.8f, 0.3f));
+
+	// Draw Grid Line
+	ScreenPoint screenHalfSize = mScreenSize.GetHalf();
+
+	for (int x = screenHalfSize.X; x <= mScreenSize.X; x += Grid2DUnit)
+	{
+		mRSI->DrawFullVerticalLine(x, gridColor);
+		if (x > screenHalfSize.X)
+		{
+			mRSI->DrawFullVerticalLine(2 * screenHalfSize.X - x, gridColor);
+		}
+	}
+
+	for (int y = screenHalfSize.Y; y <= mScreenSize.Y; y += Grid2DUnit)
+	{
+		mRSI->DrawFullHorizontalLine(y, gridColor);
+		if (y > screenHalfSize.Y)
+		{
+			mRSI->DrawFullHorizontalLine(2 * screenHalfSize.Y - y, gridColor);
+		}
+	}
+
+	// Draw World Axis
+	mRSI->DrawFullHorizontalLine(screenHalfSize.Y, LinearColor::Red);
+	mRSI->DrawFullVerticalLine(screenHalfSize.X, LinearColor::Green);
 }
 

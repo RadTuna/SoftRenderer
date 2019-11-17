@@ -30,6 +30,6 @@ struct VertexBuffer
 
 struct IndexBuffer
 {
-	UINT* Data;
+	unsigned char* Data;
 	UINT DataSize;
 };

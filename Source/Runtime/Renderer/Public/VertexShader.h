@@ -51,7 +51,7 @@ private:
 FORCEINLINE void VertexShader::ProcessVertexShader(VertexBuffer* InVertexBuffer, IndexBuffer* InIndexBuffer, UINT IndexOffset, VertexOutput* OutputData)
 {
 	VertexInput* VertexInputData = reinterpret_cast<VertexInput*>(InVertexBuffer->Data);
-	UINT* IndexInputData = InIndexBuffer->Data;
+	UINT* IndexInputData = reinterpret_cast<UINT*>(InIndexBuffer->Data);
 
 	assert(VertexInputData);
 	assert(IndexInputData);

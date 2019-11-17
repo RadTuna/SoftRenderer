@@ -42,7 +42,7 @@ void WindowsRSI::BeginFrame()
 {
 }
 
-void WindowsRSI::EndFrame()
+void WindowsRSI::BufferSwap()
 {
 	SwapBuffer();
 }

@@ -45,7 +45,7 @@ FORCEINLINE void FragmentShader::ProcessFragmentShader(FragmentInput& InFragment
 
 FORCEINLINE const Vector4 FragmentShader::FragmentMain(FragmentInput& InputData)
 {
-	Vector4 ImagineLightPosition(500.0f, 500.0f, 1000.0f, 0.0f);
+	Vector4 ImagineLightPosition(0.0f, 500.0f, -1000.0f, 0.0f);
 
 	Vector3 InvLightDir = (ImagineLightPosition - InputData.WorldPosition).ToVector3();
 	InvLightDir = InvLightDir.Normalize();

@@ -4,6 +4,8 @@
 #include "WindowsGDI.h"
 #include "RenderingSoftwareInterface.h"
 
+#define _WINDOWS_RENDERING_INTERFACE
+
 class WindowsRSI;
 class WindowsRSI : public WindowsGDI, public RenderingSoftwareInterface
 {
@@ -21,7 +23,7 @@ public:
 
 	virtual void Clear(const LinearColor& InClearColor) override;
 	virtual void BeginFrame() override;
-	virtual void EndFrame() override;
+	virtual void BufferSwap() override;
 
 	virtual void DrawPoint(const Vector2& InVectorPos, const LinearColor& InColor) override;
 	virtual void DrawPoint(const ScreenPoint& InScreenPos, const LinearColor& InColor) override;

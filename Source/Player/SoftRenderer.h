@@ -11,7 +11,7 @@ class SoftRenderer
 {
 public:
 
-	SoftRenderer(RenderingSoftwareInterface* InRSI);
+	SoftRenderer();
 
 public:
 
@@ -33,7 +33,7 @@ public:
 	std::function<long long()> PerformanceMeasureFunc;
 
 	// Input Manager
-	InputManager& GetInputManager() { return InputManager; }
+	InputManager& GetInputManager() { return mInputManager; }
 
 private:
 
@@ -42,7 +42,6 @@ private:
 	FORCEINLINE void Update();
 	FORCEINLINE void RenderFrame();
 	FORCEINLINE void SetupRenderParameter();
-	FORCEINLINE void DrawGrid2D();
 
 	FORCEINLINE void CalculrateWorldMatrix(Matrix4x4& WorldMatrix);
 	FORCEINLINE void CalculrateViewMatrix(Matrix4x4& ViewMatrix);
@@ -85,21 +84,18 @@ private:
 	float AverageFPS = 0.f;
 	float FrameFPS = 0.f;
 
-	// Renderer Interface
-	std::shared_ptr<RenderingSoftwareInterface> RSI;
-
 	// Rebderer Handler
-	std::unique_ptr<RenderContext> RendererContext;
-	std::unique_ptr<RenderFactory> RendererFactory;
+	std::unique_ptr<RenderContext> mRendererContext;
+	std::unique_ptr<RenderFactory> mRendererFactory;
 
 	// Input Manager
-	InputManager InputManager;
+	InputManager mInputManager;
 
 private:
 
 	// Temporary Variables!!!
-	Vector4 CameraLocation;
-	Vector4 CameraRotation;
+	Vector4 mCameraLocation;
+	Vector4 mCameraRotation;
 
 };
 
@@ -111,9 +107,6 @@ void SoftRenderer::PreUpdate()
 	{
 		StartTimeStamp = FrameTimeStamp;
 	}
-
-	// Clear Background
-	RSI->Clear(LinearColor::White);
 }
 
 void SoftRenderer::Update()
@@ -124,16 +117,14 @@ void SoftRenderer::Update()
 	float MoveSensivity = 100.0f;
 	float RotateSensivity = 50.0f;
 
-	CalculrateOrthographicMatrix(Matrix4x4());
-
 	// CameraLocation
-	CameraLocation.Z += InputManager.MoveForward() * DeltaSeconde * MoveSensivity;
-	CameraLocation.X -= InputManager.MoveRight() * DeltaSeconde * MoveSensivity;
-	CameraLocation.Y -= InputManager.MoveUp() * DeltaSeconde * MoveSensivity;
+	mCameraLocation.Z += mInputManager.MoveForward() * DeltaSeconde * MoveSensivity;
+	mCameraLocation.X -= mInputManager.MoveRight() * DeltaSeconde * MoveSensivity;
+	mCameraLocation.Y -= mInputManager.MoveUp() * DeltaSeconde * MoveSensivity;
 
 	// CameraRotation
-	CameraRotation.Y += InputManager.GetXAxis() * DeltaSeconde * RotateSensivity;
-	CameraRotation.X -= InputManager.GetYAxis() * DeltaSeconde * RotateSensivity;
+	mCameraRotation.Y += mInputManager.GetXAxis() * DeltaSeconde * RotateSensivity;
+	mCameraRotation.X -= mInputManager.GetYAxis() * DeltaSeconde * RotateSensivity;
 
 }
 
@@ -143,7 +134,7 @@ void SoftRenderer::PostUpdate()
 	RenderFrame();
 
 	// Render Finish
-	RSI->EndFrame();
+	mRendererContext->Represent();
 
 	// Measure Performance
 	FrameCount++;
@@ -158,10 +149,14 @@ void SoftRenderer::PostUpdate()
 
 void SoftRenderer::RenderFrame()
 {
+	// Clear Buffer
+	mRendererContext->ClearBackbuffer(LinearColor::White);
+
 	// Rendering Implement;
-	DrawGrid2D();
+	mRendererContext->DrawGrid2D();
 
 	SetupRenderParameter();
+
 	static float MeshRotation = 0.0f;
 	float DeltaTime = FrameTime / 1000.0f;
 	MeshRotation += DeltaTime * 5000.0f;
@@ -178,9 +173,9 @@ void SoftRenderer::RenderFrame()
 	// Matrix, Fov, Near, Far
 	CalculrateProjectionMatrix(MatrixBuffer->ProjectionMatrix, Math::Deg2Rad(60.0f), 1.0f, 1000.0f);
 
-	RendererContext->VSSetMatrixBuffer(MatrixBuffer);
+	mRendererContext->VSSetMatrixBuffer(MatrixBuffer);
 
-	RendererContext->DrawCall();
+	mRendererContext->DrawCall();
 
 	delete MatrixBuffer;
 	MatrixBuffer = nullptr;
@@ -188,7 +183,7 @@ void SoftRenderer::RenderFrame()
 
 void SoftRenderer::SetupRenderParameter()
 {
-	RendererContext->RSSetRasterizeState(false, true, CullingMode::CULL_NONE);
+	mRendererContext->RSSetRasterizeState(false, true, CullingMode::CULL_BACK);
 
 	UINT VertexBufferLength = 8;
 	UINT IndexBufferLength = 36;
@@ -198,19 +193,19 @@ void SoftRenderer::SetupRenderParameter()
 	Vertices[0].Position = Vector4(-10.0f, 10.0f, -10.0f, 0.0f);
 	Vertices[0].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 	Vertices[1].Position = Vector4(10.0f, 10.0f, -10.0f, 0.0f);
-	Vertices[1].Normal = Vector3(-1.0f, 1.0f, -1.0f);
+	Vertices[1].Normal = Vector3(1.0f, 1.0f, -1.0f);
 	Vertices[2].Position = Vector4(10.0f, 10.0f, 10.0f, 0.0f);
-	Vertices[2].Normal = Vector3(-1.0f, 1.0f, -1.0f);
+	Vertices[2].Normal = Vector3(1.0f, 1.0f, 1.0f);
 	Vertices[3].Position = Vector4(-10.0f, 10.0f, 10.0f, 0.0f);
-	Vertices[3].Normal = Vector3(-1.0f, 1.0f, -1.0f);
+	Vertices[3].Normal = Vector3(-1.0f, 1.0f, 1.0f);
 	Vertices[4].Position = Vector4(-10.0f, -10.0f, -10.0f, 0.0f);
-	Vertices[4].Normal = Vector3(-1.0f, 1.0f, -1.0f);
+	Vertices[4].Normal = Vector3(-1.0f, -1.0f, -1.0f);
 	Vertices[5].Position = Vector4(10.0f, -10.0f, -10.0f, 0.0f);
-	Vertices[5].Normal = Vector3(-1.0f, 1.0f, -1.0f);
+	Vertices[5].Normal = Vector3(1.0f, -1.0f, -1.0f);
 	Vertices[6].Position = Vector4(10.0f, -10.0f, 10.0f, 0.0f);
-	Vertices[6].Normal = Vector3(-1.0f, 1.0f, -1.0f);
+	Vertices[6].Normal = Vector3(1.0f, -1.0f, 1.0f);
 	Vertices[7].Position = Vector4(-10.0f, -10.0f, 10.0f, 0.0f);
-	Vertices[7].Normal = Vector3(-1.0f, 1.0f, -1.0f);
+	Vertices[7].Normal = Vector3(-1.0f, -1.0f, 1.0f);
 
 	UINT* Indices = new UINT[IndexBufferLength]{
 		1, 0, 3, 1, 3, 2,
@@ -222,55 +217,19 @@ void SoftRenderer::SetupRenderParameter()
 
 
 	VertexBuffer* RenderVertexBuffer = nullptr;
-	RendererFactory->CreateVertexBuffer(sizeof(VertexDataType) * VertexBufferLength, Vertices, &RenderVertexBuffer);
+	mRendererFactory->CreateVertexBuffer(sizeof(VertexDataType) * VertexBufferLength, Vertices, &RenderVertexBuffer);
 
 	IndexBuffer* RenderIndexBuffer = nullptr;
-	RendererFactory->CreateIndexBuffer(sizeof(UINT) * IndexBufferLength, Indices, &RenderIndexBuffer);
+	mRendererFactory->CreateIndexBuffer(sizeof(UINT) * IndexBufferLength, Indices, &RenderIndexBuffer);
 
-	RendererContext->IASetVertexBuffer(RenderVertexBuffer, sizeof(VertexDataType));
-	RendererContext->IASetIndexBuffer(RenderIndexBuffer, sizeof(UINT));
+	mRendererContext->IASetVertexBuffer(RenderVertexBuffer, sizeof(VertexDataType));
+	mRendererContext->IASetIndexBuffer(RenderIndexBuffer, sizeof(UINT));
 
 	delete[] Vertices;
 	Vertices = nullptr;
 
 	delete[] Indices;
 	Indices = nullptr;
-}
-
-void SoftRenderer::DrawGrid2D()
-{
-	const static int Grid2DUnit = 10;
-
-	// Colors to use
-	LinearColor gridColor(LinearColor(0.8f, 0.8f, 0.8f, 0.3f));
-
-	// Render Start
-	RSI->Clear(LinearColor::White);
-
-	// Draw Grid Line
-	ScreenPoint screenHalfSize = CurrentScreenSize.GetHalf();
-
-	for (int x = screenHalfSize.X; x <= CurrentScreenSize.X; x += Grid2DUnit)
-	{
-		RSI->DrawFullVerticalLine(x, gridColor);
-		if (x > screenHalfSize.X)
-		{
-			RSI->DrawFullVerticalLine(2 * screenHalfSize.X - x, gridColor);
-		}
-	}
-
-	for (int y = screenHalfSize.Y; y <= CurrentScreenSize.Y; y += Grid2DUnit)
-	{
-		RSI->DrawFullHorizontalLine(y, gridColor);
-		if (y > screenHalfSize.Y)
-		{
-			RSI->DrawFullHorizontalLine(2 * screenHalfSize.Y - y, gridColor);
-		}
-	}
-
-	// Draw World Axis
-	RSI->DrawFullHorizontalLine(screenHalfSize.Y, LinearColor::Red);
-	RSI->DrawFullVerticalLine(screenHalfSize.X, LinearColor::Green);
 }
 
 void SoftRenderer::CalculrateWorldMatrix(Matrix4x4& WorldMatrix)
@@ -281,11 +240,11 @@ void SoftRenderer::CalculrateWorldMatrix(Matrix4x4& WorldMatrix)
 
 void SoftRenderer::CalculrateViewMatrix(Matrix4x4& ViewMatrix)
 {
-	Vector3 V3CameraLocation = CameraLocation.ToVector3();
+	Vector3 V3CameraLocation = mCameraLocation.ToVector3();
 	Vector3 LookVector(0.0f, 0.0f, 1.0f);
 	Vector3 UpVector(0.0f, 1.0f, 0.0f);
 
-	Matrix4x4 RotationMatrix = Matrix4x4::GetRotationMatrix(CameraRotation);
+	Matrix4x4 RotationMatrix = Matrix4x4::GetRotationMatrix(mCameraRotation);
 	
 	LookVector *= RotationMatrix;
 	UpVector *= RotationMatrix;

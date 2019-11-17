@@ -45,7 +45,7 @@ bool RenderFactory::CreateIndexBuffer(UINT DataSize, void* InData, IndexBuffer**
 		return false;
 	}
 
-	UINT* InnerData = reinterpret_cast<UINT*>(InData);
+	unsigned char* InnerData = reinterpret_cast<unsigned char*>(InData);
 	if (InnerData == nullptr)
 	{
 		return false;
@@ -57,7 +57,7 @@ bool RenderFactory::CreateIndexBuffer(UINT DataSize, void* InData, IndexBuffer**
 		return false;
 	}
 
-	(*OutBuffer)->Data = new UINT[DataSize];
+	(*OutBuffer)->Data = new unsigned char[DataSize];
 	if ((*OutBuffer)->Data == nullptr)
 	{
 		delete OutBuffer;
