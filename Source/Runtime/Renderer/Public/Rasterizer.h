@@ -30,7 +30,7 @@ public:
 	FORCEINLINE void WriteFlatLine(const Vector4& StartPoint, const Vector4& EndPoint);
 	FORCEINLINE void WriteGeometryOutline(const Vector4& StartPoint, const Vector4& EndPoint);
 
-	FORCEINLINE void GetBaycentricCoodinate(const Vector2& InPosition, Vector3& OutCoord);
+	FORCEINLINE void GetBarycentricCoodinate(const Vector2& InPosition, Vector3& OutCoord);
 	FORCEINLINE void GetInterpolratedFragment(const Vector2& InPosition, FragmentShader::FragmentInput* OutPrimitive);
 	FORCEINLINE void SortVertexByY(VertexShader::VertexOutput* PrimitiveData);
 	FORCEINLINE bool IsFrontNormal(VertexShader::VertexOutput* PrimitiveData);
@@ -52,6 +52,7 @@ private:
 	bool bUseRasterization = true;
 	CullingMode mCullMode;
 
+	// Barycentric Interpolration Propertys
 	Vector4 mPrimitiveVectorU;
 	Vector4 mPrimitiveVectorV;
 	Vector4 mPrimitiveVectorW;
@@ -150,9 +151,10 @@ FORCEINLINE void Rasterizer::RasterizeBottomFlatPrimitive(const VertexShader::Ve
 
 	Vector4 StartPoint;
 	Vector4 EndPoint;
-	StartPoint = EndPoint = InPrimitiveData[PRIMITIVE_INDEX_ONE].Position;
+	StartPoint.X = EndPoint.X = InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X;
+	StartPoint.Y = EndPoint.Y = ceilf(InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
 
-	for (float PosY = InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y; PosY >= InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y; --PosY)
+	for (float PosY = StartPoint.Y; PosY >= ceilf(InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y); --PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
@@ -170,9 +172,10 @@ FORCEINLINE void Rasterizer::RasterizeBottomFlatPrimitive(const Vector4& Point1,
 
 	Vector4 StartPoint;
 	Vector4 EndPoint;
-	StartPoint = EndPoint = Point1;
+	StartPoint.X = EndPoint.X = Point1.X;
+	StartPoint.Y = EndPoint.Y = ceilf(Point1.Y);
 
-	for (float PosY = Point1.Y; PosY >= Point2.Y; --PosY)
+	for (float PosY = StartPoint.Y; PosY > ceilf(Point2.Y); --PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
@@ -192,9 +195,10 @@ FORCEINLINE void Rasterizer::RasterizeTopFlatPrimitive(const VertexShader::Verte
 
 	Vector4 StartPoint;
 	Vector4 EndPoint;
-	StartPoint = EndPoint = InPrimitiveData[PRIMITIVE_INDEX_THREE].Position;
+	StartPoint.X = EndPoint.X = InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X;
+	StartPoint.Y = EndPoint.Y = ceilf(InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y);
 
-	for (float PosY = InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y; PosY <= InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y; ++PosY)
+	for (float PosY = StartPoint.Y; PosY <= ceilf(InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y); ++PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
@@ -212,9 +216,15 @@ FORCEINLINE void Rasterizer::RasterizeTopFlatPrimitive(const Vector4& Point1, co
 
 	Vector4 StartPoint;
 	Vector4 EndPoint;
-	StartPoint = EndPoint = Point3;
+	StartPoint.X = EndPoint.X = Point3.X;
+	StartPoint.Y = EndPoint.Y = ceilf(Point3.Y);
 
-	for (float PosY = Point3.Y; PosY <= Point1.Y; ++PosY)
+	if (StartPoint.Y >= ceilf(Point2.Y))
+	{
+		return;
+	}
+
+	for (float PosY = StartPoint.Y; PosY <= ceilf(Point2.Y); ++PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
@@ -228,9 +238,10 @@ FORCEINLINE void Rasterizer::RasterizeTopFlatPrimitive(const Vector4& Point1, co
 FORCEINLINE void Rasterizer::WriteFlatLine(const Vector4& StartPoint, const Vector4& EndPoint)
 {
 	// Draw FlatLine;
-	float EndX = Math::Max(StartPoint.X, EndPoint.X);
-	for (float PosX = Math::Min(StartPoint.X, EndPoint.X); PosX <= EndX; ++PosX)
+	float EndX = floorf(Math::Max(StartPoint.X, EndPoint.X));
+	for (float PosX = floorf(Math::Min(StartPoint.X, EndPoint.X)); PosX <= EndX; ++PosX)
 	{
+		// Out Boarder Exception
 		if (PosX < -ScreenLimit.X || PosX > ScreenLimit.X || StartPoint.Y < -ScreenLimit.Y || StartPoint.Y > ScreenLimit.Y)
 		{
 			continue;
@@ -301,7 +312,7 @@ FORCEINLINE void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, con
 }
 
 
-FORCEINLINE void Rasterizer::GetBaycentricCoodinate(const Vector2& InPosition, Vector3& OutCoord)
+FORCEINLINE void Rasterizer::GetBarycentricCoodinate(const Vector2& InPosition, Vector3& OutCoord)
 {
 	// Calculrate BaycentiricCoodinate;
 	mPrimitiveVectorW = InPosition - mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].Position.ToVector2();
@@ -315,20 +326,20 @@ FORCEINLINE void Rasterizer::GetBaycentricCoodinate(const Vector2& InPosition, V
 FORCEINLINE void Rasterizer::GetInterpolratedFragment(const Vector2& InPosition, FragmentShader::FragmentInput* OutPrimitive)
 {
 	// return InterpolratedPrimitive;
-	Vector3 BaycentricWeight;
-	GetBaycentricCoodinate(InPosition, BaycentricWeight);
+	Vector3 BarycentricWeight;
+	GetBarycentricCoodinate(InPosition, BarycentricWeight);
 
 	// Do not Interpolrated
 	OutPrimitive->Position = InPosition;
 
 	// Interpolrated
-	OutPrimitive->WorldPosition = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].WorldPosition * BaycentricWeight.X
-		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].WorldPosition * BaycentricWeight.Y
-		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].WorldPosition * BaycentricWeight.Z;
+	OutPrimitive->WorldPosition = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].WorldPosition * BarycentricWeight.X
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].WorldPosition * BarycentricWeight.Y
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].WorldPosition * BarycentricWeight.Z;
 
-	OutPrimitive->WorldNormal = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].WorldNormal * BaycentricWeight.X
-		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].WorldNormal * BaycentricWeight.Y
-		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].WorldNormal * BaycentricWeight.Z;
+	OutPrimitive->WorldNormal = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].WorldNormal * BarycentricWeight.X
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].WorldNormal * BarycentricWeight.Y
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].WorldNormal * BarycentricWeight.Z;
 }
 
 FORCEINLINE void Rasterizer::SortVertexByY(VertexShader::VertexOutput* PrimitiveData)

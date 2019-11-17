@@ -8,11 +8,11 @@ struct ScreenPoint
 public:
 	ScreenPoint() : X(0), Y(0) { }
 	explicit ScreenPoint(int InX, int InY) : X(InX), Y(InY) { }
-	explicit ScreenPoint(float InX, float InY) : X(Math::FloorToInt(InX)), Y(Math::FloorToInt(InY)) { }
+	explicit ScreenPoint(float InX, float InY) : X(Math::CeilToInt(InX)), Y(Math::CeilToInt(InY)) { }
 	explicit ScreenPoint(const Vector2& InPos) : ScreenPoint(InPos.X, InPos.Y) {}
 	explicit ScreenPoint(const Vector3& InPos) : ScreenPoint(InPos.X, InPos.Y) {}
 
-	ScreenPoint GetHalf() { return ScreenPoint(Math::FloorToInt(0.5f * X), Math::FloorToInt(0.5f * Y)); }
+	ScreenPoint GetHalf() { return ScreenPoint(Math::CeilToInt(0.5f * X), Math::CeilToInt(0.5f * Y)); }
 	FORCEINLINE bool HasZero() const { return ( X == 0 || Y == 0 ); }
 
 	FORCEINLINE static ScreenPoint ToScreenCoordinate(const ScreenPoint& InScreenSize, const Vector2& InPos)

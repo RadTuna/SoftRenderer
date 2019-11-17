@@ -65,7 +65,6 @@ FORCEINLINE void RenderContext::DrawCall()
 
 		mRasterizer->Rasterize(OutPrimitiveData);
 	}
-
 }
 
 FORCEINLINE void RenderContext::Represent()

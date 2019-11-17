@@ -94,9 +94,9 @@ struct Math
 		}
 	}
 
-	static FORCEINLINE bool IsNearlyFloat(float A, float B)
+	static FORCEINLINE bool IsNearlyFloat(float A, float B, float InEpsilon = Epsilon)
 	{
-		if (Math::Abs(A - B) < Epsilon)
+		if (Math::Abs(A - B) < InEpsilon)
 		{
 			return true;
 		}
