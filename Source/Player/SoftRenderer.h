@@ -159,7 +159,7 @@ void SoftRenderer::RenderFrame()
 
 	static float MeshRotation = 0.0f;
 	float DeltaTime = FrameTime / 1000.0f;
-	MeshRotation += DeltaTime * 5000.0f;
+	MeshRotation += DeltaTime * 1000.0f;
 
 	// Stop Rotation Code
 	//MeshRotation = 0.0f;
