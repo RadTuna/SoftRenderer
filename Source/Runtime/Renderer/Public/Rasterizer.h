@@ -23,9 +23,7 @@ public:
 
 	FORCEINLINE void Rasterize(VertexShader::VertexOutput* PrimitiveData);
 
-	FORCEINLINE void RasterizeBottomFlatPrimitive(const VertexShader::VertexOutput* InPrimitiveData);
 	FORCEINLINE void RasterizeBottomFlatPrimitive(const Vector4& Point1, const Vector4& Point2, const Vector4& Point3);
-	FORCEINLINE void RasterizeTopFlatPrimitive(const VertexShader::VertexOutput* InPrimitiveData);
 	FORCEINLINE void RasterizeTopFlatPrimitive(const Vector4& Point1, const Vector4& Point2, const Vector4& Point3);
 
 	FORCEINLINE void WriteFlatLine(const Vector4& StartPoint, const Vector4& EndPoint);
@@ -87,6 +85,14 @@ FORCEINLINE void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData
 		PrimitiveData[i].Position.Y *= mScreenSize.X;
 	}
 
+	// 이후의 래스터라이즈 단계에서 정상적인 기울기 계산을 위해 모든 X, Y 값을 올림
+	PrimitiveData[PRIMITIVE_INDEX_ONE].Position.X = ceilf(PrimitiveData[PRIMITIVE_INDEX_ONE].Position.X);
+	PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y = ceilf(PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
+	PrimitiveData[PRIMITIVE_INDEX_TWO].Position.X = ceilf(PrimitiveData[PRIMITIVE_INDEX_TWO].Position.X);
+	PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y = ceilf(PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y);
+	PrimitiveData[PRIMITIVE_INDEX_THREE].Position.X = ceilf(PrimitiveData[PRIMITIVE_INDEX_THREE].Position.X);
+	PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y = ceilf(PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y);
+
 	switch (mCullMode)
 	{
 	case CullingMode::CULL_FRONT:
@@ -117,11 +123,11 @@ FORCEINLINE void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData
 
 		if (Math::IsNearlyFloat(PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y, PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y) == true)
 		{
-			RasterizeTopFlatPrimitive(PrimitiveData);
+			RasterizeTopFlatPrimitive(PrimitiveData[PRIMITIVE_INDEX_ONE].Position, PrimitiveData[PRIMITIVE_INDEX_TWO].Position, PrimitiveData[PRIMITIVE_INDEX_THREE].Position);
 		}
 		else if (Math::IsNearlyFloat(PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y, PrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y) == true)
 		{
-			RasterizeBottomFlatPrimitive(PrimitiveData);
+			RasterizeBottomFlatPrimitive(PrimitiveData[PRIMITIVE_INDEX_ONE].Position, PrimitiveData[PRIMITIVE_INDEX_TWO].Position, PrimitiveData[PRIMITIVE_INDEX_THREE].Position);
 		}
 		else
 		{
@@ -143,29 +149,6 @@ FORCEINLINE void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData
 	}
 }
 
-FORCEINLINE void Rasterizer::RasterizeBottomFlatPrimitive(const VertexShader::VertexOutput* InPrimitiveData)
-{
-	float SlopeL = (InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.X - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X)
-		/ (InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
-	float SlopeR = (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X)
-		/ (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
-
-	Vector4 StartPoint;
-	Vector4 EndPoint;
-	StartPoint.X = EndPoint.X = InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X;
-	StartPoint.Y = EndPoint.Y = ceilf(InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
-
-	for (float PosY = StartPoint.Y; PosY >= ceilf(InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y); --PosY)
-	{
-		WriteFlatLine(StartPoint, EndPoint);
-
-		StartPoint.X -= SlopeL;
-		EndPoint.X -= SlopeR;
-		--StartPoint.Y;
-		--EndPoint.Y;
-	}
-}
-
 FORCEINLINE void Rasterizer::RasterizeBottomFlatPrimitive(const Vector4& Point1, const Vector4& Point2, const Vector4& Point3)
 {
 	float SlopeL = (Point2.X - Point1.X) / (Point2.Y - Point1.Y);
@@ -174,9 +157,9 @@ FORCEINLINE void Rasterizer::RasterizeBottomFlatPrimitive(const Vector4& Point1,
 	Vector4 StartPoint;
 	Vector4 EndPoint;
 	StartPoint.X = EndPoint.X = Point1.X;
-	StartPoint.Y = EndPoint.Y = ceilf(Point1.Y);
+	StartPoint.Y = EndPoint.Y = Point1.Y;
 
-	for (float PosY = StartPoint.Y; PosY > ceilf(Point2.Y); --PosY)
+	for (float PosY = StartPoint.Y; PosY > Point2.Y; --PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
@@ -187,58 +170,17 @@ FORCEINLINE void Rasterizer::RasterizeBottomFlatPrimitive(const Vector4& Point1,
 	}
 }
 
-FORCEINLINE void Rasterizer::RasterizeTopFlatPrimitive(const VertexShader::VertexOutput* InPrimitiveData)
-{
-	float SlopeL = (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X)
-		/ (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y);
-	float SlopeR = (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.X)
-		/ (InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y - InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y);
-
-	float XOffsetL = fmodf(InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_ONE].Position.X, SlopeL);
-	float XOffsetR = fmodf(InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X - InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.X, SlopeR);
-
-	Vector4 StartPoint;
-	Vector4 EndPoint;
-	StartPoint.X = EndPoint.X = InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.X;
-	StartPoint.X -= XOffsetL;
-	EndPoint.X -= XOffsetR;
-	StartPoint.Y = EndPoint.Y = ceilf(InPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Y);
-
-	for (float PosY = StartPoint.Y; PosY <= ceilf(InPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y); ++PosY)
-	{
-		WriteFlatLine(StartPoint, EndPoint);
-
-		StartPoint.X += SlopeL;
-		EndPoint.X += SlopeR;
-		++StartPoint.Y;
-		++EndPoint.Y;
-	}
-}
-
 FORCEINLINE void Rasterizer::RasterizeTopFlatPrimitive(const Vector4& Point1, const Vector4& Point2, const Vector4& Point3)
 {
 	float SlopeL = (Point3.X - Point1.X) / (Point3.Y - Point1.Y);
 	float SlopeR = (Point3.X - Point2.X) / (Point3.Y - Point2.Y);
 
-	float XOffsetL = 0.0f;
-	if ((Point3.X - Point1.X) != 0.0f && SlopeL != 0.0f)
-	{
-		XOffsetL = fmodf(Point3.X - Point1.X, SlopeL);
-	}
-	float XOffsetR = 0.0f;
-	if ((Point3.X - Point2.X) != 0.0f && SlopeR != 0.0f)
-	{
-		XOffsetR = fmodf(Point3.X - Point2.X, SlopeR);
-	}
-
 	Vector4 StartPoint;
 	Vector4 EndPoint;
 	StartPoint.X = EndPoint.X = Point3.X;
-	StartPoint.X -= XOffsetL;
-	EndPoint.X -= XOffsetR;
-	StartPoint.Y = EndPoint.Y = ceilf(Point3.Y);
+	StartPoint.Y = EndPoint.Y = Point3.Y;
 
-	for (float PosY = StartPoint.Y; PosY < ceilf(Point2.Y); ++PosY)
+	for (float PosY = StartPoint.Y; PosY <= Point2.Y; ++PosY)
 	{
 		WriteFlatLine(StartPoint, EndPoint);
 
@@ -247,11 +189,6 @@ FORCEINLINE void Rasterizer::RasterizeTopFlatPrimitive(const Vector4& Point1, co
 		++StartPoint.Y;
 		++EndPoint.Y;
 	}
-
-	StartPoint.Y = EndPoint.Y = ceilf(Point1.Y);
-	StartPoint.X = Point1.X;
-	EndPoint.X = Point2.X;
-	WriteFlatLine(StartPoint, EndPoint);
 }
 
 FORCEINLINE void Rasterizer::WriteFlatLine(const Vector4& StartPoint, const Vector4& EndPoint)
