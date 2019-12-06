@@ -78,13 +78,14 @@ struct Math
 		B = Temp;
 	}
 
-	static FORCEINLINE int Sign(float A)
+	template<class T>
+	static FORCEINLINE T Sign(T A)
 	{
-		if (A > 0.0f)
+		if (A > 0)
 		{
 			return 1;
 		}
-		else if (A < 0.0f)
+		else if (A < 0)
 		{
 			return -1;
 		}

@@ -183,7 +183,7 @@ void SoftRenderer::RenderFrame()
 
 void SoftRenderer::SetupRenderParameter()
 {
-	mRendererContext->RSSetRasterizeState(false, true, CullingMode::CULL_BACK);
+	mRendererContext->RSSetRasterizeState(true, false, CullingMode::CULL_BACK);
 
 	UINT VertexBufferLength = 8;
 	UINT IndexBufferLength = 36;

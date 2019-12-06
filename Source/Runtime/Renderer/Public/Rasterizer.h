@@ -276,15 +276,16 @@ FORCEINLINE void Rasterizer::WriteFlatLine(const Vector4& StartPoint, const Vect
 
 FORCEINLINE void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, const Vector4& EndPoint)
 {
-	ScreenPoint CurrentPoint = ScreenPoint::ToScreenCoordinate(mScreenSize, StartPoint.ToVector2());
+	ScreenPoint IntStartPoint = ScreenPoint::ToScreenCoordinate(mScreenSize, StartPoint.ToVector2());
+	ScreenPoint IntEndPoint = ScreenPoint::ToScreenCoordinate(mScreenSize, EndPoint.ToVector2());
 
-	// Tempolary Code
+	// Temporary Code
 	LinearColor OutlineColor = LinearColor::Red;
 
-	int DeltaX = Math::FloorToInt(Math::Abs(EndPoint.X - StartPoint.X));
-	int DeltaY = Math::FloorToInt(Math::Abs(EndPoint.Y - StartPoint.Y));
-	int DirX = Math::Sign(EndPoint.X - StartPoint.X);
-	int DirY = Math::Sign(EndPoint.Y - StartPoint.Y);
+	int DeltaX = Math::Abs(IntEndPoint.X - IntStartPoint.X);
+	int DeltaY = Math::Abs(IntEndPoint.Y - IntStartPoint.Y);
+	int DirX = Math::Sign(IntEndPoint.X - IntStartPoint.X);
+	int DirY = Math::Sign(IntEndPoint.Y - IntStartPoint.Y);
 
 	bool IsSwapped = false;
 	if (DeltaY > DeltaX) // 1 ~ 의 기울기
@@ -293,25 +294,25 @@ FORCEINLINE void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, con
 		IsSwapped = true;
 	}
 
-	int Judge = 2 * DeltaX - DeltaY;
+	int Judge = 2 * DeltaY - DeltaX;
 
 	for (int CurX = 0; CurX < DeltaX; ++CurX)
 	{
 		// Out Boarder Exception
-		if (CurrentPoint.X >= 0 && CurrentPoint.X <= mScreenSize.X && CurrentPoint.Y >= 0 && CurrentPoint.Y <= mScreenSize.Y)
+		if (IntStartPoint.X >= 0 && IntStartPoint.X <= mScreenSize.X && IntStartPoint.Y >= 0 && IntStartPoint.Y <= mScreenSize.Y)
 		{
-			mRSI->DrawPoint(CurrentPoint, OutlineColor);
+			mRSI->DrawPoint(IntStartPoint, OutlineColor);
 		}
 
 		if (Judge >= 0)
 		{
 			if (IsSwapped == true)
 			{
-				CurrentPoint.X += DirX;
+				IntStartPoint.X += DirX;
 			}
 			else
 			{
-				CurrentPoint.Y -= DirY; // 스크린 스페이스의 Y좌표가 반전되어 있음.
+				IntStartPoint.Y += DirY;
 			}
 
 			Judge -= 2 * DeltaX;
@@ -319,11 +320,11 @@ FORCEINLINE void Rasterizer::WriteGeometryOutline(const Vector4& StartPoint, con
 
 		if (IsSwapped == true)
 		{
-			CurrentPoint.Y -= DirY; // 스크린 스페이스의 Y좌표가 반전되어 있음.
+			IntStartPoint.Y += DirY;
 		}
 		else
 		{
-			CurrentPoint.X += DirX;
+			IntStartPoint.X += DirX;
 		}
 
 		Judge += 2 * DeltaY;
