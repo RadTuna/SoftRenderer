@@ -17,7 +17,7 @@ class ModelRenderComponent : public BaseComponent
 {
 public:
 
-	ModelRenderComponent() = default;
+	ModelRenderComponent(class RenderContext* InRenderer, class RenderFactory* InRenderFac);
 	virtual ~ModelRenderComponent() = default;
 
 	void Awake(Entity* InParent) override;

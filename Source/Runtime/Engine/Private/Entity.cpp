@@ -2,6 +2,21 @@
 #include "Precompiled.h"
 #include "..\Public\Entity.h"
 
+#include <functional>
+
+Entity::Entity(const std::string& InTag)
+	: Location(Vector4::Zero)
+	, Rotation(Vector3::Zero)
+	, Scale(Vector3::One)
+	, EntityTag(InTag)
+{
+	HashCode = std::hash<std::string>{}(EntityTag);
+}
+
+Entity::~Entity()
+{
+}
+
 void Entity::Awake()
 {
 	for (auto Iter = Components.begin(); Iter != Components.end(); ++Iter)

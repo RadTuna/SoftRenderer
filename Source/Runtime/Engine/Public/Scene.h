@@ -9,8 +9,8 @@ class Scene final
 {
 public:
 
-	Scene();
-	~Scene();
+	Scene() = default;
+	~Scene() = default;
 
 	void Awake();
 	void Update(float DeltaTime);
@@ -19,8 +19,15 @@ public:
 
 	void AddEntity(std::unique_ptr<Entity>&& InEntity);
 
+	Entity* GetEntity(const std::string& InTag, bool UseHash);
+	Entity* GetEntity(std::size_t Index);
+
 private:
 
 	std::vector<std::unique_ptr<Entity>> Entities;
+
+public:
+
+	FORCEINLINE const std::vector<std::unique_ptr<Entity>>& GetEntities() const { return Entities; }
 
 };

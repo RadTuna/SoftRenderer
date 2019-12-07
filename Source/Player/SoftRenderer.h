@@ -6,6 +6,17 @@
 #include "RenderingSoftwareInterface.h"
 #include "RenderContext.h"
 #include "RenderFactory.h"
+#include "Scene.h"
+#include "ModelRenderComponent.h"
+#include "CameraComponent.h"
+
+
+struct MatrixBufferType
+{
+	Matrix4x4 WorldMatrix;
+	Matrix4x4 ViewMatrix;
+	Matrix4x4 ProjectionMatrix;
+};
 
 class SoftRenderer
 {
@@ -37,31 +48,13 @@ public:
 
 private:
 
+	FORCEINLINE void Awake();
 	FORCEINLINE void PreUpdate();
 	FORCEINLINE void PostUpdate();
 	FORCEINLINE void Update();
 	FORCEINLINE void RenderFrame();
-	FORCEINLINE void SetupRenderParameter();
-
-	FORCEINLINE void CalculrateWorldMatrix(Matrix4x4& WorldMatrix);
-	FORCEINLINE void CalculrateViewMatrix(Matrix4x4& ViewMatrix);
-	FORCEINLINE void CalculrateProjectionMatrix(Matrix4x4& ProjectionMatrix, float Fov, float Near, float Far);
-	FORCEINLINE void CalculrateOrthographicMatrix(Matrix4x4& OrthographicMatrix);
-
-private:
-
-	struct VertexDataType
-	{
-		Vector4 Position;
-		Vector3 Normal;
-	};
-
-	struct MatrixBufferType
-	{
-		Matrix4x4 WorldMatrix;
-		Matrix4x4 ViewMatrix;
-		Matrix4x4 ProjectionMatrix;
-	};
+	FORCEINLINE void InitializeScene();
+	FORCEINLINE void SetRenderParameter(ModelRenderComponent* InComp);
 
 private:
 
@@ -84,23 +77,31 @@ private:
 	float AverageFPS = 0.f;
 	float FrameFPS = 0.f;
 
-	// Rebderer Handler
+	// Renderer Handler
 	std::unique_ptr<RenderContext> mRendererContext;
 	std::unique_ptr<RenderFactory> mRendererFactory;
+
+
+	std::unique_ptr<Scene> mSceneLevel;
+	CameraComponent* mCurrentCameraComp;
 
 	// Input Manager
 	InputManager mInputManager;
 
-private:
-
-	// Temporary Variables!!!
-	Vector4 mCameraLocation;
-	Vector4 mCameraRotation;
-
 };
 
 
-void SoftRenderer::PreUpdate()
+FORCEINLINE void SoftRenderer::Awake()
+{
+	InitializeScene();
+	
+	for (auto Iter = mSceneLevel->GetEntities().begin(); Iter != mSceneLevel->GetEntities().end(); ++Iter)
+	{
+		(*Iter)->Awake();
+	}
+}
+
+FORCEINLINE void SoftRenderer::PreUpdate()
 {
 	FrameTimeStamp = PerformanceMeasureFunc();
 	if (FrameCount == 0)
@@ -109,26 +110,30 @@ void SoftRenderer::PreUpdate()
 	}
 }
 
-void SoftRenderer::Update()
+FORCEINLINE void SoftRenderer::Update()
 {
 	// GameLogic Implement
 	float DeltaSeconde = FrameTime / 1000.0f;
 
-	float MoveSensivity = 100.0f;
-	float RotateSensivity = 50.0f;
+	//float MoveSensivity = 100.0f;
+	//float RotateSensivity = 50.0f;
 
-	// CameraLocation
-	mCameraLocation.Z += mInputManager.MoveForward() * DeltaSeconde * MoveSensivity;
-	mCameraLocation.X -= mInputManager.MoveRight() * DeltaSeconde * MoveSensivity;
-	mCameraLocation.Y -= mInputManager.MoveUp() * DeltaSeconde * MoveSensivity;
+	//// CameraLocation
+	//mCameraLocation.Z += mInputManager.MoveForward() * DeltaSeconde * MoveSensivity;
+	//mCameraLocation.X -= mInputManager.MoveRight() * DeltaSeconde * MoveSensivity;
+	//mCameraLocation.Y -= mInputManager.MoveUp() * DeltaSeconde * MoveSensivity;
 
-	// CameraRotation
-	mCameraRotation.Y += mInputManager.GetXAxis() * DeltaSeconde * RotateSensivity;
-	mCameraRotation.X -= mInputManager.GetYAxis() * DeltaSeconde * RotateSensivity;
+	//// CameraRotation
+	//mCameraRotation.Y += mInputManager.GetXAxis() * DeltaSeconde * RotateSensivity;
+	//mCameraRotation.X -= mInputManager.GetYAxis() * DeltaSeconde * RotateSensivity;
 
+	for (auto Iter = mSceneLevel->GetEntities().begin(); Iter != mSceneLevel->GetEntities().end(); ++Iter)
+	{
+		(*Iter)->Update(DeltaSeconde);
+	}
 }
 
-void SoftRenderer::PostUpdate()
+FORCEINLINE void SoftRenderer::PostUpdate()
 {
 	// Unload Level
 	RenderFrame();
@@ -147,49 +152,38 @@ void SoftRenderer::PostUpdate()
 	AverageFPS = ElapsedTime == 0.f ? 0.f : 1000.f / ElapsedTime * FrameCount;
 }
 
-void SoftRenderer::RenderFrame()
+FORCEINLINE void SoftRenderer::RenderFrame()
 {
 	// Clear Buffer
 	mRendererContext->ClearBackbuffer(LinearColor::White);
-
-	// Rendering Implement;
 	mRendererContext->DrawGrid2D();
 
-	SetupRenderParameter();
+	for (auto Iter = mSceneLevel->GetEntities().begin(); Iter != mSceneLevel->GetEntities().end(); ++Iter)
+	{
+		(*Iter)->Render();
+		ModelRenderComponent* CurrentRenderComp = (*Iter)->GetComponent<ModelRenderComponent>();
+		if (CurrentRenderComp == nullptr)
+		{
+			continue;
+		}
 
-	static float MeshRotation = 0.0f;
-	float DeltaTime = FrameTime / 1000.0f;
-	MeshRotation += DeltaTime * 1000.0f;
-
-	// Stop Rotation Code
-	//MeshRotation = 0.0f;
-
-	MatrixBufferType* MatrixBuffer = new MatrixBufferType;
-	MatrixBuffer->WorldMatrix = Matrix4x4::GetRotationMatrix(Vector4(0.0f, Math::Deg2Rad(MeshRotation), 0.0f, 0.0f));
-
-	// CalculrateWorldMatrix(MatrixBuffer->WorldMatrix);
-	CalculrateViewMatrix(MatrixBuffer->ViewMatrix);
-
-	// Matrix, Fov, Near, Far
-	CalculrateProjectionMatrix(MatrixBuffer->ProjectionMatrix, Math::Deg2Rad(60.0f), 1.0f, 1000.0f);
-
-	mRendererContext->VSSetMatrixBuffer(MatrixBuffer);
-
-	mRendererContext->DrawCall();
-
-	delete MatrixBuffer;
-	MatrixBuffer = nullptr;
+		SetRenderParameter(CurrentRenderComp);
+		mRendererContext->DrawCall();
+	}
 }
 
-void SoftRenderer::SetupRenderParameter()
+FORCEINLINE void SoftRenderer::InitializeScene()
 {
-	mRendererContext->RSSetRasterizeState(false, true, CullingMode::CULL_BACK);
+	mSceneLevel = std::make_unique<Scene>();
 
+	std::unique_ptr<ModelRenderComponent> ModelRenderComp = std::make_unique<ModelRenderComponent>(mRendererContext.get(), mRendererFactory.get());
+	std::unique_ptr<Entity> TestModelEntity = std::make_unique<Entity>("Model");
+
+	// Temporary Meshdata Injection code [Start];
 	UINT VertexBufferLength = 8;
 	UINT IndexBufferLength = 36;
 
-	VertexDataType* Vertices = new VertexDataType[VertexBufferLength];
-
+	std::unique_ptr<VertexDataType[]> Vertices = std::make_unique<VertexDataType[]>(VertexBufferLength);
 	Vertices[0].Position = Vector4(-10.0f, 10.0f, -10.0f, 0.0f);
 	Vertices[0].Normal = Vector3(-1.0f, 1.0f, -1.0f);
 	Vertices[1].Position = Vector4(10.0f, 10.0f, -10.0f, 0.0f);
@@ -207,85 +201,46 @@ void SoftRenderer::SetupRenderParameter()
 	Vertices[7].Position = Vector4(-10.0f, -10.0f, 10.0f, 0.0f);
 	Vertices[7].Normal = Vector3(-1.0f, -1.0f, 1.0f);
 
-	UINT* Indices = new UINT[IndexBufferLength]{
+	std::unique_ptr<UINT[]> Indices(new UINT[IndexBufferLength]{
 		1, 0, 3, 1, 3, 2,
 		0, 1, 4, 1, 5, 4,
 		0, 4, 3, 3, 4, 7,
 		2, 3, 7, 2, 7, 6,
 		2, 6, 5, 2, 5, 1,
-		4, 5, 7, 5, 6, 7 };
+		4, 5, 7, 5, 6, 7 });
 
+	ModelRenderComp->SetMeshData(std::move(Vertices), VertexBufferLength);
+	ModelRenderComp->SetIndexData(std::move(Indices), IndexBufferLength);
+	// Temporary Meshdata Injection code [End];
 
-	VertexBuffer* RenderVertexBuffer = nullptr;
-	mRendererFactory->CreateVertexBuffer(sizeof(VertexDataType) * VertexBufferLength, Vertices, &RenderVertexBuffer);
+	TestModelEntity->AddComponent(std::move(ModelRenderComp));
 
-	IndexBuffer* RenderIndexBuffer = nullptr;
-	mRendererFactory->CreateIndexBuffer(sizeof(UINT) * IndexBufferLength, Indices, &RenderIndexBuffer);
+	std::unique_ptr<CameraComponent> CameraComp = std::make_unique<CameraComponent>();
+	std::unique_ptr<Entity> CameraEntity = std::make_unique<Entity>("Camera");
+	CameraComp->SetCameraParameter(60.0f, 0.3f, 1000.0f);
+	CameraEntity->SetLocation(Vector4(0.0f, 0.0f, -150.0f, 1.0f));
+	CameraEntity->SetRotation(Vector3(0.0f, 0.0f, 0.0f));
+	mCurrentCameraComp = CameraComp.get();
 
-	mRendererContext->IASetVertexBuffer(RenderVertexBuffer, sizeof(VertexDataType));
-	mRendererContext->IASetIndexBuffer(RenderIndexBuffer, sizeof(UINT));
+	CameraEntity->AddComponent(std::move(CameraComp));
 
-	delete[] Vertices;
-	Vertices = nullptr;
-
-	delete[] Indices;
-	Indices = nullptr;
+	mSceneLevel->AddEntity(std::move(TestModelEntity));
+	mSceneLevel->AddEntity(std::move(CameraEntity));
 }
 
-void SoftRenderer::CalculrateWorldMatrix(Matrix4x4& WorldMatrix)
+FORCEINLINE void SoftRenderer::SetRenderParameter(ModelRenderComponent* InComp)
 {
-	// 단위 행렬로 반환함.
-	WorldMatrix.SetIdentity();
-}
+	assert(InComp);
 
-void SoftRenderer::CalculrateViewMatrix(Matrix4x4& ViewMatrix)
-{
-	Vector3 V3CameraLocation = mCameraLocation.ToVector3();
-	Vector3 LookVector(0.0f, 0.0f, 1.0f);
-	Vector3 UpVector(0.0f, 1.0f, 0.0f);
+	mRendererContext->RSSetRasterizeState(false, true, CullingMode::CULL_BACK);
 
-	Matrix4x4 RotationMatrix = Matrix4x4::GetRotationMatrix(mCameraRotation);
-	
-	LookVector *= RotationMatrix;
-	UpVector *= RotationMatrix;
-
-	LookVector += V3CameraLocation;
-
-	Vector3 ZAxisVector = LookVector - V3CameraLocation;
-
-	Vector3 XAxisVector = ZAxisVector.Cross(UpVector);
-	UpVector = ZAxisVector.Cross(XAxisVector);
-
-	ZAxisVector.Normalize();
-	UpVector.Normalize();
-	XAxisVector.Normalize();
-
-	Matrix4x4 GenViewMatrix(
-		Vector4(XAxisVector.X, UpVector.X, ZAxisVector.X, 0.0f),
-		Vector4(XAxisVector.Y, UpVector.Y, ZAxisVector.Y, 0.0f),
-		Vector4(XAxisVector.Z, UpVector.Z, ZAxisVector.Z, 0.0f),
-		Vector4(-XAxisVector.Dot(V3CameraLocation), -UpVector.Dot(V3CameraLocation), -ZAxisVector.Dot(V3CameraLocation), 1.0f));
-
-	ViewMatrix = GenViewMatrix;
-}
-
-void SoftRenderer::CalculrateProjectionMatrix(Matrix4x4& ProjectionMatrix, float Fov, float Near, float Far)
-{
 	float ScreenAspect = static_cast<float>(CurrentScreenSize.X) / static_cast<float>(CurrentScreenSize.Y);
 
-	float YScale = 1.0f / std::tanf(Fov / 2.0f);
-	float XScale = YScale * ScreenAspect;
+	std::unique_ptr<MatrixBufferType> RenderMatrixBuffer = std::make_unique<MatrixBufferType>();
+	InComp->GetWorldMatrix(RenderMatrixBuffer->WorldMatrix);
+	mCurrentCameraComp->GetViewMatrix(RenderMatrixBuffer->ViewMatrix);
+	mCurrentCameraComp->GetProjectionMatrix(RenderMatrixBuffer->ProjectionMatrix, ScreenAspect);
 
-	float ZScale = Far / (Far - Near);
-	float ZMove = -Near * ZScale;
-
-	Matrix4x4 GenProjectionMatrix(
-		Vector4(XScale, 0.0f, 0.0f, 0.0f),
-		Vector4(0.0f, YScale, 0.0f, 0.0f),
-		Vector4(0.0f, 0.0f, ZScale, 1.0f),
-		Vector4(0.0f, 0.0f, ZMove, 0.0f));
-
-	ProjectionMatrix = GenProjectionMatrix;
+	mRendererContext->VSSetMatrixBuffer(RenderMatrixBuffer.get());
 }
-
 

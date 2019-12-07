@@ -6,6 +6,12 @@
 #include "RenderContext.h"
 #include "Entity.h"
 
+ModelRenderComponent::ModelRenderComponent(RenderContext* InRenderer, RenderFactory* InRenderFac)
+	: Renderer(InRenderer)
+	, RenderFac(InRenderFac)
+{
+}
+
 void ModelRenderComponent::Awake(Entity* InParent)
 {
 	BaseComponent::Awake(InParent);

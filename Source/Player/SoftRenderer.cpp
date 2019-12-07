@@ -7,8 +7,6 @@ SoftRenderer::SoftRenderer()
 {
 	mRendererContext = std::make_unique<RenderContext>();
 	mRendererFactory = std::make_unique<RenderFactory>();
-
-	mCameraLocation = Vector4(0.0f, 0.0f, -200.0f, 0.0f);
 }
 
 void SoftRenderer::OnTick()
@@ -50,6 +48,7 @@ void SoftRenderer::OnTick()
 		}
 
 		IsAllInitialized = IsRendererInitialized && IsPerformanceCheckInitialized && IsInputInitialized;
+		Awake();
 	}
 	else
 	{
@@ -72,9 +71,5 @@ void SoftRenderer::OnResize(const ScreenPoint& InNewScreenSize)
 void SoftRenderer::Shutdown()
 {
 	mRendererContext->Shutdown();
-}
-
-void SoftRenderer::CalculrateOrthographicMatrix(Matrix4x4& OrthographicMatrix)
-{
 }
 

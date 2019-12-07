@@ -1,4 +1,5 @@
-#include "BaseComponent.h"
+#include "Precompiled.h"
+#include "..\Public\BaseComponent.h"
 
 #include <assert.h>
 

@@ -1,9 +1,11 @@
+#include "Precompiled.h"
 #include "..\Public\CameraComponent.h"
 
 #include <cmath>
 
 #include "Entity.h"
 #include "RenderContext.h"
+#include "MathUtil.h"
 
 void CameraComponent::Awake(Entity* InParent)
 {
@@ -20,6 +22,13 @@ void CameraComponent::Render()
 
 void CameraComponent::End()
 {
+}
+
+void CameraComponent::SetCameraParameter(float Fov, float Near, float Far)
+{
+	CameraFov = Fov;
+	CameraNearPlane = Near;
+	CameraFarPlane = Far;
 }
 
 void CameraComponent::GetViewMatrix(Matrix4x4& OutMatrix) const
@@ -55,7 +64,7 @@ void CameraComponent::GetViewMatrix(Matrix4x4& OutMatrix) const
 
 void CameraComponent::GetProjectionMatrix(Matrix4x4& OutMatrix, float ScreenAspect) const
 {
-	float YScale = 1.0f / std::tanf(CameraFov / 2.0f);
+	float YScale = 1.0f / std::tanf(Math::Deg2Rad(CameraFov) / 2.0f);
 	float XScale = YScale * ScreenAspect;
 
 	float ZScale = CameraFarPlane / (CameraFarPlane - CameraNearPlane);
