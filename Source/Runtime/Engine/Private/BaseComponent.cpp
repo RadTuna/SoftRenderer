@@ -1,2 +1,11 @@
+#include "BaseComponent.h"
 
-#include "Precompiled.h"
+#include <assert.h>
+
+#include "Entity.h"
+
+void BaseComponent::Awake(Entity* InParent)
+{
+	ParentEntity = InParent;
+	assert(ParentEntity);
+}
