@@ -8,6 +8,7 @@
 #include "Vector4.h"
 #include "Vector3.h"
 #include "Matrix4x4.h"
+#include "MathUtil.h"
 
 void MovementComponent::Awake(Entity* InParent)
 {
@@ -25,11 +26,11 @@ void MovementComponent::Update(float DeltaTime)
 
 	if (InputManagerProxy::MouseRB())
 	{
-		RotationVector.X = InputManagerProxy::GetYAxis() * DeltaTime * RotateSensivity;
-		RotationVector.Y = InputManagerProxy::GetXAxis() * DeltaTime * RotateSensivity;
+		RotationVector.X = -InputManagerProxy::GetYAxis() * RotateSensivity;
+		RotationVector.Y = -InputManagerProxy::GetXAxis() * RotateSensivity;
 	}
 
-	Matrix4x4 ViewRotationMatrix = Matrix4x4::GetRotationMatrix(mParentEntity->GetRotation());
+	Matrix4x4 ViewRotationMatrix = Matrix4x4::GetRotationMatrix(-mParentEntity->GetRotation());
 	MovementVector = ViewRotationMatrix * MovementVector;
 
 	mParentEntity->Translate(MovementVector);

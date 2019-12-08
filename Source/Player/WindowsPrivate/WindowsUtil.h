@@ -75,7 +75,7 @@ namespace WindowsUtil
 		float OutX;
 		OutX = static_cast<float>(CurrentMousePos.x) - static_cast<float>(PrevMousePos.x);
 
-		return OutX * 0.1f;
+		return OutX * 0.001f;
 	}
 
 	FORCEINLINE float GetYAxisInput()
@@ -83,7 +83,7 @@ namespace WindowsUtil
 		float OutY;
 		OutY = static_cast<float>(CurrentMousePos.y) - static_cast<float>(PrevMousePos.y);
 
-		return OutY * 0.1f;
+		return OutY * 0.001f;
 	}
 
 	FORCEINLINE float GetForwardInput()

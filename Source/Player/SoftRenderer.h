@@ -113,23 +113,10 @@ FORCEINLINE void SoftRenderer::PreUpdate()
 FORCEINLINE void SoftRenderer::Update()
 {
 	// GameLogic Implement
-	float DeltaSeconde = FrameTime / 1000.0f;
-
-	//float MoveSensivity = 100.0f;
-	//float RotateSensivity = 50.0f;
-
-	//// CameraLocation
-	//mCameraLocation.Z += mInputManager.MoveForward() * DeltaSeconde * MoveSensivity;
-	//mCameraLocation.X -= mInputManager.MoveRight() * DeltaSeconde * MoveSensivity;
-	//mCameraLocation.Y -= mInputManager.MoveUp() * DeltaSeconde * MoveSensivity;
-
-	//// CameraRotation
-	//mCameraRotation.Y += mInputManager.GetXAxis() * DeltaSeconde * RotateSensivity;
-	//mCameraRotation.X -= mInputManager.GetYAxis() * DeltaSeconde * RotateSensivity;
 
 	for (auto Iter = mSceneLevel->GetEntities().begin(); Iter != mSceneLevel->GetEntities().end(); ++Iter)
 	{
-		(*Iter)->Update(DeltaSeconde);
+		(*Iter)->Update(FrameTime / 1000.0f);
 	}
 }
 
@@ -221,7 +208,7 @@ FORCEINLINE void SoftRenderer::InitializeScene()
 	CameraComp->SetCameraParameter(60.0f, 0.3f, 1000.0f);
 	CameraEntity->SetLocation(Vector4(0.0f, 0.0f, -150.0f, 1.0f));
 	CameraEntity->SetRotation(Vector3(0.0f, 0.0f, 0.0f));
-	MovementComp->SetMovementParameter(100.0f, 100.0f);
+	MovementComp->SetMovementParameter(100.0f, 50.0f);
 	mCurrentCameraComp = CameraComp.get();
 
 	CameraEntity->AddComponent(std::move(CameraComp));

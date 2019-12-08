@@ -37,15 +37,12 @@ void CameraComponent::GetViewMatrix(Matrix4x4& OutMatrix) const
 	Vector3 LookVector(0.0f, 0.0f, 1.0f);
 	Vector3 UpVector(0.0f, 1.0f, 0.0f);
 
-	Matrix4x4 RotationMatrix = Matrix4x4::GetRotationMatrix(mParentEntity->GetRotation());
+	Matrix4x4 RotationMatrix = Matrix4x4::GetRotationMatrix(-mParentEntity->GetRotation());
 
-	LookVector *= RotationMatrix;
-	UpVector *= RotationMatrix;
+	LookVector = RotationMatrix * LookVector;
+	UpVector = RotationMatrix * UpVector;
 
-	LookVector += V3CameraLocation;
-
-	Vector3 ZAxisVector = LookVector - V3CameraLocation;
-
+	Vector3 ZAxisVector = LookVector;
 	Vector3 XAxisVector = ZAxisVector.Cross(UpVector);
 	UpVector = ZAxisVector.Cross(XAxisVector);
 
@@ -57,7 +54,7 @@ void CameraComponent::GetViewMatrix(Matrix4x4& OutMatrix) const
 		Vector4(XAxisVector.X, UpVector.X, ZAxisVector.X, 0.0f),
 		Vector4(XAxisVector.Y, UpVector.Y, ZAxisVector.Y, 0.0f),
 		Vector4(XAxisVector.Z, UpVector.Z, ZAxisVector.Z, 0.0f),
-		Vector4(-XAxisVector.Dot(V3CameraLocation), -UpVector.Dot(V3CameraLocation), -ZAxisVector.Dot(V3CameraLocation), 1.0f));
+		Vector4(XAxisVector.Dot(-V3CameraLocation), UpVector.Dot(-V3CameraLocation), ZAxisVector.Dot(-V3CameraLocation), 1.0f));
 
 	OutMatrix = GenViewMatrix;
 }

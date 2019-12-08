@@ -15,6 +15,7 @@ public:
 	FORCEINLINE Matrix4x4 Tranpose() const;
 	FORCEINLINE static Matrix4x4 GetRotationMatrix(const Vector3& Rotation);
 	FORCEINLINE static Matrix4x4 GetScaleMatrix(const Vector3& Scale);
+	FORCEINLINE static Matrix4x4 GetLocationMatrix(const Vector3& Location);
 	FORCEINLINE static Matrix4x4 GetLocationMatrix(const Vector4& Location);
 
 	FORCEINLINE const Vector4& operator[](int InIndex) const;
@@ -61,7 +62,7 @@ FORCEINLINE Matrix4x4 Matrix4x4::Tranpose() const
 	);
 }
 
-inline Matrix4x4 Matrix4x4::GetRotationMatrix(const Vector3& Rotation)
+FORCEINLINE Matrix4x4 Matrix4x4::GetRotationMatrix(const Vector3& Rotation)
 {
 	float XSin, XCos;
 	Math::SinCos(&XSin, &XCos, Math::Deg2Rad(Rotation.X));
@@ -87,10 +88,10 @@ inline Matrix4x4 Matrix4x4::GetRotationMatrix(const Vector3& Rotation)
 		Vector4(0.0f, 0.0f, 1.0f, 0.0f),
 		Vector4(0.0f, 0.0f, 0.0f, 1.0f));
 
-	return XRotMatrix * YRotMatrix * ZRotMatrix;
+	return ZRotMatrix * YRotMatrix * XRotMatrix;
 }
 
-inline Matrix4x4 Matrix4x4::GetScaleMatrix(const Vector3& Scale)
+FORCEINLINE Matrix4x4 Matrix4x4::GetScaleMatrix(const Vector3& Scale)
 {
 	Matrix4x4 ScaleMatrix(
 		Vector4(Scale.X, 0.0f, 0.0f, 0.0f),
@@ -101,7 +102,18 @@ inline Matrix4x4 Matrix4x4::GetScaleMatrix(const Vector3& Scale)
 	return ScaleMatrix;
 }
 
-inline Matrix4x4 Matrix4x4::GetLocationMatrix(const Vector4& Location)
+FORCEINLINE Matrix4x4 Matrix4x4::GetLocationMatrix(const Vector3& Location)
+{
+	Matrix4x4 LocationMatrix(
+		Vector4(1.0f, 0.0f, 0.0f, 0.0f),
+		Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+		Vector4(0.0f, 0.0f, 1.0f, 0.0f),
+		Vector4(Location.X, Location.Y, Location.Z, 1.0f));
+
+	return LocationMatrix;
+}
+
+FORCEINLINE Matrix4x4 Matrix4x4::GetLocationMatrix(const Vector4& Location)
 {
 	Matrix4x4 LocationMatrix(
 		Vector4(1.0f, 0.0f, 0.0f, 0.0f),
