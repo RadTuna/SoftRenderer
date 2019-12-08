@@ -2,6 +2,21 @@
 #include "Precompiled.h"
 #include "SoftRenderer.h"
 #include "RSIDataTypes.h"
+#include "InputManagerProxy.h"
+
+
+namespace InputManagerProxy
+{
+	std::function<float()> GetXAxis;
+	std::function<float()> GetYAxis;
+	std::function<float()> MoveForward;
+	std::function<float()> MoveRight;
+	std::function<float()> MoveUp;
+	std::function<bool()> MouseLBDown;
+	std::function<bool()> MouseLB;
+	std::function<bool()> MouseRBDown;
+	std::function<bool()> MouseRB;
+}
 
 SoftRenderer::SoftRenderer()
 {
@@ -40,6 +55,16 @@ void SoftRenderer::OnTick()
 		// Check Input Binding
 		if (mInputManager.GetXAxis && mInputManager.GetYAxis && mInputManager.MoveForward && mInputManager.MoveRight && mInputManager.MoveUp)
 		{
+			InputManagerProxy::GetXAxis = mInputManager.GetXAxis;
+			InputManagerProxy::GetYAxis = mInputManager.GetYAxis;
+			InputManagerProxy::MoveForward = mInputManager.MoveForward;
+			InputManagerProxy::MoveRight = mInputManager.MoveRight;
+			InputManagerProxy::MoveUp = mInputManager.MoveUp;
+			InputManagerProxy::MouseLBDown = mInputManager.MouseLBDown;
+			InputManagerProxy::MouseLB = mInputManager.MouseLB;
+			InputManagerProxy::MouseRBDown = mInputManager.MouseRBDown;
+			InputManagerProxy::MouseRB = mInputManager.MouseRB;
+
 			IsInputInitialized = true;
 		}
 		else

@@ -34,8 +34,6 @@ public:
 
 private:
 
-private:
-
 	std::unique_ptr<InputAssembler> mInputAssembler;
 	std::unique_ptr<VertexShader> mVertexShader;
 	std::unique_ptr<Rasterizer> mRasterizer;
@@ -103,9 +101,9 @@ FORCEINLINE void RenderContext::VSSetMatrixBuffer(void* Buffer)
 
 	VertexShader::MatrixBuffer* pMatrixBuffer = reinterpret_cast<VertexShader::MatrixBuffer*>(Buffer);
 
-	mVertexShader->VertexShaderMatrix.WorldMatrix = pMatrixBuffer->WorldMatrix;
-	mVertexShader->VertexShaderMatrix.ViewMatrix = pMatrixBuffer->ViewMatrix;
-	mVertexShader->VertexShaderMatrix.ProjectionMatrix = pMatrixBuffer->ProjectionMatrix;
+	mVertexShader->mVertexShaderMatrix.WorldMatrix = pMatrixBuffer->WorldMatrix;
+	mVertexShader->mVertexShaderMatrix.ViewMatrix = pMatrixBuffer->ViewMatrix;
+	mVertexShader->mVertexShaderMatrix.ProjectionMatrix = pMatrixBuffer->ProjectionMatrix;
 }
 
 FORCEINLINE void RenderContext::DrawGrid2D()

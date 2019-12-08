@@ -2,6 +2,7 @@
 #include "Precompiled.h"
 #include "WindowsPlayer.h"
 #include "SoftRenderer.h"
+#include "WindowsUtil.h"
 
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
@@ -20,6 +21,10 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 	renderer.GetInputManager().MoveForward = WindowsUtil::GetForwardInput;
 	renderer.GetInputManager().MoveRight = WindowsUtil::GetRightInput;
 	renderer.GetInputManager().MoveUp = WindowsUtil::GetUpInput;
+	renderer.GetInputManager().MouseLBDown = WindowsUtil::GetMouseLBDownInput;
+	renderer.GetInputManager().MouseLB = WindowsUtil::GetMouseLBInput;
+	renderer.GetInputManager().MouseRBDown = WindowsUtil::GetMouseRBDownInput;
+	renderer.GetInputManager().MouseRB = WindowsUtil::GetMouseRBInput;
 
 	if (!WindowsPlayer::Create(hInstance, defScreenSize))
 	{
@@ -33,6 +38,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCm
 	static float updatePeriod = 500.f;
 	while (WindowsPlayer::Tick())
 	{
+		WindowsUtil::UpdateMousePos();
 		renderer.OnTick();
 
 		float currentTime = renderer.GetElapsedTime();

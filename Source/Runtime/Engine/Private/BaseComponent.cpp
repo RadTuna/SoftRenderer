@@ -7,6 +7,6 @@
 
 void BaseComponent::Awake(Entity* InParent)
 {
-	ParentEntity = InParent;
-	assert(ParentEntity);
+	mParentEntity = InParent;
+	assert(mParentEntity);
 }

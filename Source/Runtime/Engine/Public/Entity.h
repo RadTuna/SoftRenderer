@@ -13,7 +13,7 @@ class Entity final
 public:
 
 	Entity(const std::string& InTag);
-	~Entity();
+	~Entity() = default;
 
 	void Awake();
 	void Update(float DeltaTime);
@@ -21,6 +21,9 @@ public:
 	void End();
 
 	void AddComponent(std::unique_ptr<BaseComponent>&& InComp);
+
+	void Translate(const Vector4& InDeltaLocation);
+	void Rotate(const Vector3& InDeltaRotation);
 
 	void SetLocation(const Vector4& InLocation);
 	void SetRotation(const Vector3& InRotation);
@@ -31,27 +34,27 @@ public:
 
 private:
 
-	std::vector<std::unique_ptr<BaseComponent>> Components;
-	Vector4 Location;
-	Vector3 Rotation;
-	Vector3 Scale;
-	std::string EntityTag;
-	std::size_t HashCode;
+	std::vector<std::unique_ptr<BaseComponent>> mComponents;
+	Vector4 mLocation;
+	Vector3 mRotation;
+	Vector3 mScale;
+	std::string mEntityTag;
+	std::size_t mHashCode;
 
 public:
 
-	FORCEINLINE const Vector4& GetLocation() const { return Location; }
-	FORCEINLINE const Vector3& GetRotation() const { return Rotation; }
-	FORCEINLINE const Vector3& GetScale() const { return Scale; }
-	FORCEINLINE const std::string& GetTag() const { return EntityTag; }
-	FORCEINLINE const std::size_t GetHash() const { return HashCode; }
+	FORCEINLINE const Vector4& GetLocation() const { return mLocation; }
+	FORCEINLINE const Vector3& GetRotation() const { return mRotation; }
+	FORCEINLINE const Vector3& GetScale() const { return mScale; }
+	FORCEINLINE const std::string& GetTag() const { return mEntityTag; }
+	FORCEINLINE const std::size_t GetHash() const { return mHashCode; }
 
 };
 
 template<typename T>
 T* Entity::GetComponent()
 {
-	for (auto iter = Components.begin(); iter != Components.end(); ++iter)
+	for (auto iter = mComponents.begin(); iter != mComponents.end(); ++iter)
 	{
 		if (typeid(T) == typeid(*(*iter).get()))
 		{

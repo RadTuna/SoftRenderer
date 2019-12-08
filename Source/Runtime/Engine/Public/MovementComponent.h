@@ -14,5 +14,11 @@ public:
 	void Render() override;
 	void End() override;
 
+	void SetMovementParameter(float InMove, float InRot);
+
 private:
+
+	float MoveSensivity = 100.0f;
+	float RotateSensivity = 50.0f;
+
 };

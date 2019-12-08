@@ -32,7 +32,7 @@ public:
 		Vector3 WorldNormal;
 	};
 
-	MatrixBuffer VertexShaderMatrix;
+	MatrixBuffer mVertexShaderMatrix;
 
 public:
 
@@ -72,13 +72,13 @@ FORCEINLINE VertexShader::VertexOutput VertexShader::VertexMain(VertexInput Inpu
 
 	InputData.Position.W = 1.0f;
 
-	Output.Position = VertexShaderMatrix.WorldMatrix * InputData.Position;
+	Output.Position = mVertexShaderMatrix.WorldMatrix * InputData.Position;
 
 	Output.WorldPosition = Output.Position.ToVector3();
-	Output.WorldNormal = (VertexShaderMatrix.WorldMatrix * InputData.Normal).Normalize();
+	Output.WorldNormal = (mVertexShaderMatrix.WorldMatrix * InputData.Normal).Normalize();
 
-	Output.Position = VertexShaderMatrix.ViewMatrix * Output.Position;
-	Output.Position = VertexShaderMatrix.ProjectionMatrix * Output.Position;
+	Output.Position = mVertexShaderMatrix.ViewMatrix * Output.Position;
+	Output.Position = mVertexShaderMatrix.ProjectionMatrix * Output.Position;
 
 	Output.Position.X /= Output.Position.W;
 	Output.Position.Y /= Output.Position.W;

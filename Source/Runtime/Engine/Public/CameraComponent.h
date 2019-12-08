@@ -22,8 +22,8 @@ public:
 
 private:
 
-	float CameraFov = 1.0472f; // 60µµ
-	float CameraNearPlane = 0.3f;
-	float CameraFarPlane = 1000.0f;
+	float mCameraFov = 1.0472f; // 60µµ
+	float mCameraNearPlane = 0.3f;
+	float mCameraFarPlane = 1000.0f;
 
 };

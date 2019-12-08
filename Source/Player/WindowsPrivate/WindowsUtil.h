@@ -4,7 +4,10 @@
 
 namespace WindowsUtil
 {
-	inline void GetWindowSize(HWND handle, float* width, float* height)
+	POINT CurrentMousePos;
+	POINT PrevMousePos;
+
+	FORCEINLINE void GetWindowSize(HWND handle, float* width, float* height)
 	{
 		RECT rect;
 		::GetClientRect(handle, &rect);
@@ -12,14 +15,14 @@ namespace WindowsUtil
 		*height = static_cast<float>(rect.bottom - rect.top);
 	}
 
-	inline void Show(HWND handle)
+	FORCEINLINE void Show(HWND handle)
 	{
 		::ShowWindow(handle, SW_SHOW);
 		::SetForegroundWindow(handle);
 		::SetFocus(handle);
 	}
 
-	inline void CenterWindow(HWND handle)
+	FORCEINLINE void CenterWindow(HWND handle)
 	{
 		// center on parent or screen
 		RECT rc, rcOwner, rcWindow;
@@ -39,7 +42,7 @@ namespace WindowsUtil
 			SWP_NOSIZE);
 	}
 
-	inline float GetCyclesPerMilliSeconds()
+	FORCEINLINE float GetCyclesPerMilliSeconds()
 	{
 		// Init Query Performance Timer
 		LARGE_INTEGER frequency;
@@ -51,7 +54,7 @@ namespace WindowsUtil
 		return (float)(frequency.QuadPart / 1000.f);
 	}
 
-	inline long long GetCurrentTimeStamp()
+	FORCEINLINE long long GetCurrentTimeStamp()
 	{
 		LARGE_INTEGER currentTime;
 		QueryPerformanceCounter(&currentTime);
@@ -61,29 +64,29 @@ namespace WindowsUtil
 	#define ISPRESSED(KeyCode) (::GetKeyState(KeyCode) & 0x8000) != 0
 	enum { VK_KeyA = 0x41, VK_KeyS = 0x53, VK_KeyD = 0x44, VK_KeyW = 0x57 };
 
-	inline float GetXAxisInput()
+	FORCEINLINE void UpdateMousePos()
 	{
-		bool isLeft = GetAsyncKeyState(VK_LEFT);
-		bool isRight = GetAsyncKeyState(VK_RIGHT);
-		if (isLeft ^ isRight)
-		{
-			return isLeft ? -1.0f : 1.0f;
-		}
-		return 0.0f;
+		PrevMousePos = CurrentMousePos;
+		GetCursorPos(&CurrentMousePos);
 	}
 
-	inline float GetYAxisInput()
+	FORCEINLINE float GetXAxisInput()
 	{
-		bool isDown = GetAsyncKeyState(VK_DOWN);
-		bool isUp = GetAsyncKeyState(VK_UP);
-		if (isDown ^ isUp)
-		{
-			return isDown ? -1.0f : 1.0f;
-		}
-		return 0.0f;
+		float OutX;
+		OutX = static_cast<float>(CurrentMousePos.x) - static_cast<float>(PrevMousePos.x);
+
+		return OutX * 0.1f;
 	}
 
-	inline float GetForwardInput()
+	FORCEINLINE float GetYAxisInput()
+	{
+		float OutY;
+		OutY = static_cast<float>(CurrentMousePos.y) - static_cast<float>(PrevMousePos.y);
+
+		return OutY * 0.1f;
+	}
+
+	FORCEINLINE float GetForwardInput()
 	{
 		bool isForward = GetAsyncKeyState(VK_KeyW);
 		bool isReverse = GetAsyncKeyState(VK_KeyS);
@@ -94,7 +97,7 @@ namespace WindowsUtil
 		return 0.0f;
 	}
 
-	inline float GetRightInput()
+	FORCEINLINE float GetRightInput()
 	{
 		bool isRight = GetAsyncKeyState(VK_KeyD);
 		bool isLeft = GetAsyncKeyState(VK_KeyA);
@@ -105,7 +108,7 @@ namespace WindowsUtil
 		return 0.0f;
 	}
 
-	inline float GetUpInput()
+	FORCEINLINE float GetUpInput()
 	{
 		bool isUp = GetAsyncKeyState(VK_SPACE);
 		bool isDown = GetAsyncKeyState(VK_CONTROL);
@@ -114,6 +117,48 @@ namespace WindowsUtil
 			return isDown ? -1.0f : 1.0f;
 		}
 		return 0.0f;
+	}
+
+	FORCEINLINE bool GetMouseLBDownInput()
+	{
+		static bool Prev = false;
+		bool Cur = GetAsyncKeyState(VK_LBUTTON);
+
+		// »ó½Â¿§Áö¸¦ °ËÃâ
+		if (Prev == false && Cur == true)
+		{
+			Prev = Cur;
+			return true;
+		}
+		Prev = Cur;
+
+		return false;
+	}
+
+	FORCEINLINE bool GetMouseLBInput()
+	{
+		return GetAsyncKeyState(VK_LBUTTON);
+	}
+
+	FORCEINLINE bool GetMouseRBDownInput()
+	{
+		static bool Prev = false;
+		bool Cur = GetAsyncKeyState(VK_RBUTTON);
+
+		// »ó½Â¿§Áö¸¦ °ËÃâ
+		if (Prev == false && Cur == true)
+		{
+			Prev = Cur;
+			return true;
+		}
+		Prev = Cur;
+
+		return false;
+	}
+
+	FORCEINLINE bool GetMouseRBInput()
+	{
+		return GetAsyncKeyState(VK_RBUTTON);
 	}
 
 }

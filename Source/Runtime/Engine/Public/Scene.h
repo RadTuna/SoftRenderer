@@ -24,10 +24,10 @@ public:
 
 private:
 
-	std::vector<std::unique_ptr<Entity>> Entities;
+	std::vector<std::unique_ptr<Entity>> mEntities;
 
 public:
 
-	FORCEINLINE const std::vector<std::unique_ptr<Entity>>& GetEntities() const { return Entities; }
+	FORCEINLINE const std::vector<std::unique_ptr<Entity>>& GetEntities() const { return mEntities; }
 
 };

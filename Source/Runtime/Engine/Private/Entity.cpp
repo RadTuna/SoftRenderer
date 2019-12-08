@@ -5,21 +5,17 @@
 #include <functional>
 
 Entity::Entity(const std::string& InTag)
-	: Location(Vector4::Zero)
-	, Rotation(Vector3::Zero)
-	, Scale(Vector3::One)
-	, EntityTag(InTag)
+	: mLocation(Vector4::Zero)
+	, mRotation(Vector3::Zero)
+	, mScale(Vector3::One)
+	, mEntityTag(InTag)
 {
-	HashCode = std::hash<std::string>{}(EntityTag);
-}
-
-Entity::~Entity()
-{
+	mHashCode = std::hash<std::string>{}(mEntityTag);
 }
 
 void Entity::Awake()
 {
-	for (auto Iter = Components.begin(); Iter != Components.end(); ++Iter)
+	for (auto Iter = mComponents.begin(); Iter != mComponents.end(); ++Iter)
 	{
 		(*Iter)->Awake(this);
 	}
@@ -27,7 +23,7 @@ void Entity::Awake()
 
 void Entity::Update(float DeltaTime)
 {
-	for (auto Iter = Components.begin(); Iter != Components.end(); ++Iter)
+	for (auto Iter = mComponents.begin(); Iter != mComponents.end(); ++Iter)
 	{
 		(*Iter)->Update(DeltaTime);
 	}
@@ -35,7 +31,7 @@ void Entity::Update(float DeltaTime)
 
 void Entity::Render()
 {
-	for (auto Iter = Components.begin(); Iter != Components.end(); ++Iter)
+	for (auto Iter = mComponents.begin(); Iter != mComponents.end(); ++Iter)
 	{
 		(*Iter)->Render();
 	}
@@ -43,7 +39,7 @@ void Entity::Render()
 
 void Entity::End()
 {
-	for (auto Iter = Components.begin(); Iter != Components.end(); ++Iter)
+	for (auto Iter = mComponents.begin(); Iter != mComponents.end(); ++Iter)
 	{
 		(*Iter)->End();
 	}
@@ -51,20 +47,30 @@ void Entity::End()
 
 void Entity::AddComponent(std::unique_ptr<BaseComponent>&& InComp)
 {
-	Components.emplace_back(std::move(InComp));
+	mComponents.emplace_back(std::move(InComp));
+}
+
+void Entity::Translate(const Vector4& InDeltaLocation)
+{
+	mLocation += InDeltaLocation;
+}
+
+void Entity::Rotate(const Vector3& InDeltaRotation)
+{
+	mRotation += InDeltaRotation;
 }
 
 void Entity::SetLocation(const Vector4& InLocation)
 {
-	Location = InLocation;
+	mLocation = InLocation;
 }
 
 void Entity::SetRotation(const Vector3& InRotation)
 {
-	Rotation = InRotation;
+	mRotation = InRotation;
 }
 
 void Entity::SetScale(const Vector3& InScale)
 {
-	Scale = InScale;
+	mScale = InScale;
 }

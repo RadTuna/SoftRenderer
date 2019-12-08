@@ -10,4 +10,8 @@ struct InputManager
 	std::function<float()> MoveForward;
 	std::function<float()> MoveRight;
 	std::function<float()> MoveUp;
+	std::function<bool()> MouseLBDown;
+	std::function<bool()> MouseLB;
+	std::function<bool()> MouseRBDown;
+	std::function<bool()> MouseRB;
 };

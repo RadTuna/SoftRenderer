@@ -5,7 +5,7 @@
 
 void Scene::Awake()
 {
-	for (auto Iter = Entities.begin(); Iter != Entities.end(); ++Iter)
+	for (auto Iter = mEntities.begin(); Iter != mEntities.end(); ++Iter)
 	{
 		(*Iter)->Awake();
 	}
@@ -13,7 +13,7 @@ void Scene::Awake()
 
 void Scene::Update(float DeltaTime)
 {
-	for (auto Iter = Entities.begin(); Iter != Entities.end(); ++Iter)
+	for (auto Iter = mEntities.begin(); Iter != mEntities.end(); ++Iter)
 	{
 		(*Iter)->Update(DeltaTime);
 	}
@@ -21,7 +21,7 @@ void Scene::Update(float DeltaTime)
 
 void Scene::Render()
 {
-	for (auto Iter = Entities.begin(); Iter != Entities.end(); ++Iter)
+	for (auto Iter = mEntities.begin(); Iter != mEntities.end(); ++Iter)
 	{
 		(*Iter)->Render();
 	}
@@ -29,7 +29,7 @@ void Scene::Render()
 
 void Scene::End()
 {
-	for (auto Iter = Entities.begin(); Iter != Entities.end(); ++Iter)
+	for (auto Iter = mEntities.begin(); Iter != mEntities.end(); ++Iter)
 	{
 		(*Iter)->End();
 	}
@@ -37,7 +37,7 @@ void Scene::End()
 
 void Scene::AddEntity(std::unique_ptr<Entity>&& InEntity)
 {
-	Entities.emplace_back(std::move(InEntity));
+	mEntities.emplace_back(std::move(InEntity));
 }
 
 Entity* Scene::GetEntity(const std::string& InTag, bool UseHash)
@@ -48,7 +48,7 @@ Entity* Scene::GetEntity(const std::string& InTag, bool UseHash)
 		HashCode = std::hash<std::string>{}(InTag);
 	}
 
-	for (auto Iter = Entities.begin(); Iter != Entities.end(); ++Iter)
+	for (auto Iter = mEntities.begin(); Iter != mEntities.end(); ++Iter)
 	{
 		if (UseHash)
 		{
@@ -71,10 +71,10 @@ Entity* Scene::GetEntity(const std::string& InTag, bool UseHash)
 
 Entity* Scene::GetEntity(std::size_t Index)
 {
-	if (Entities.size() >= Index || Index < 0)
+	if (mEntities.size() >= Index || Index < 0)
 	{
 		return nullptr;
 	}
 
-	return Entities[Index].get();
+	return mEntities[Index].get();
 }

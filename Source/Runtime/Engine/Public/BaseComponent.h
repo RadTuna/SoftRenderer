@@ -14,6 +14,6 @@ public:
 
 protected:
 
-	class Entity* ParentEntity;
+	class Entity* mParentEntity;
 
 };

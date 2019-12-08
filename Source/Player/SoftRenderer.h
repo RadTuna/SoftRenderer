@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <functional>
+
 #include "InputManager.h" 
 #include "RenderingSoftwareInterface.h"
 #include "RenderContext.h"
@@ -9,6 +10,7 @@
 #include "Scene.h"
 #include "ModelRenderComponent.h"
 #include "CameraComponent.h"
+#include "MovementComponent.h"
 
 
 struct MatrixBufferType
@@ -43,8 +45,7 @@ public:
 	std::function<float()> PerformanceInitFunc;
 	std::function<long long()> PerformanceMeasureFunc;
 
-	// Input Manager
-	InputManager& GetInputManager() { return mInputManager; }
+	FORCEINLINE InputManager& GetInputManager() { return mInputManager; }
 
 private:
 
@@ -85,7 +86,6 @@ private:
 	std::unique_ptr<Scene> mSceneLevel;
 	CameraComponent* mCurrentCameraComp;
 
-	// Input Manager
 	InputManager mInputManager;
 
 };
@@ -216,13 +216,16 @@ FORCEINLINE void SoftRenderer::InitializeScene()
 	TestModelEntity->AddComponent(std::move(ModelRenderComp));
 
 	std::unique_ptr<CameraComponent> CameraComp = std::make_unique<CameraComponent>();
+	std::unique_ptr<MovementComponent> MovementComp = std::make_unique<MovementComponent>();
 	std::unique_ptr<Entity> CameraEntity = std::make_unique<Entity>("Camera");
 	CameraComp->SetCameraParameter(60.0f, 0.3f, 1000.0f);
 	CameraEntity->SetLocation(Vector4(0.0f, 0.0f, -150.0f, 1.0f));
 	CameraEntity->SetRotation(Vector3(0.0f, 0.0f, 0.0f));
+	MovementComp->SetMovementParameter(100.0f, 100.0f);
 	mCurrentCameraComp = CameraComp.get();
 
 	CameraEntity->AddComponent(std::move(CameraComp));
+	CameraEntity->AddComponent(std::move(MovementComp));
 
 	mSceneLevel->AddEntity(std::move(TestModelEntity));
 	mSceneLevel->AddEntity(std::move(CameraEntity));

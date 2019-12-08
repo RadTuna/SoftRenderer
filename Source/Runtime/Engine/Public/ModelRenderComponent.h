@@ -32,11 +32,11 @@ public:
 
 private:
 
-	std::unique_ptr<VertexDataType[]> MeshData;
-	std::unique_ptr<UINT[]> IndexData;
-	UINT MeshLength;
-	UINT IndexLength;
-	class RenderContext* Renderer;
-	class RenderFactory* RenderFac;
+	std::unique_ptr<VertexDataType[]> mMeshData;
+	std::unique_ptr<UINT[]> mIndexData;
+	UINT mMeshLength;
+	UINT mIndexLength;
+	class RenderContext* mRenderer;
+	class RenderFactory* mRenderFactory;
 
 };
