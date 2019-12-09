@@ -29,6 +29,8 @@ public:
 	FORCEINLINE void IASetVertexBuffer(VertexBuffer* Buffer, UINT Stride);
 	FORCEINLINE void IASetIndexBuffer(IndexBuffer* Buffer, UINT Stride);
 	FORCEINLINE void VSSetMatrixBuffer(void* Buffer);
+	FORCEINLINE void FSSetDirectionalLightBuffer(void* Buffers, UINT NumBuffers);
+	FORCEINLINE void FSSetPointLightBuffer(void* Buffers, UINT NumBuffers);
 
 	FORCEINLINE void DrawGrid2D();
 
@@ -104,6 +106,62 @@ FORCEINLINE void RenderContext::VSSetMatrixBuffer(void* Buffer)
 	mVertexShader->mVertexShaderMatrix.WorldMatrix = pMatrixBuffer->WorldMatrix;
 	mVertexShader->mVertexShaderMatrix.ViewMatrix = pMatrixBuffer->ViewMatrix;
 	mVertexShader->mVertexShaderMatrix.ProjectionMatrix = pMatrixBuffer->ProjectionMatrix;
+}
+
+FORCEINLINE void RenderContext::FSSetDirectionalLightBuffer(void* Buffers, UINT NumBuffers)
+{
+	if (Buffers == nullptr)
+	{
+		return;
+	}
+
+	FragmentShader::DirectionalLightBuffer* pDirectionalLightBuffers = reinterpret_cast<FragmentShader::DirectionalLightBuffer*>(Buffers);
+	assert(pDirectionalLightBuffers);
+
+	FragmentShader::DirectionalLightBuffer* InDirectionalLightBuffes = new FragmentShader::DirectionalLightBuffer[NumBuffers];
+	assert(InDirectionalLightBuffes);
+
+	for (int i = 0; i < NumBuffers; ++i)
+	{
+		InDirectionalLightBuffes[i] = pDirectionalLightBuffers[i];
+	}
+
+	if (mFragmentShader->mDirectionalLightBuffers != nullptr)
+	{
+		delete[] mFragmentShader->mDirectionalLightBuffers;
+		mFragmentShader->mDirectionalLightBuffers = nullptr;
+	}
+
+	mFragmentShader->mDirectionalLightBuffers = InDirectionalLightBuffes;
+	mFragmentShader->mPointLightBufferLength = NumBuffers;
+}
+
+FORCEINLINE void RenderContext::FSSetPointLightBuffer(void* Buffers, UINT NumBuffers)
+{
+	if (Buffers == nullptr)
+	{
+		return;
+	}
+
+	FragmentShader::PointLightBuffer* pPointLightBuffers = reinterpret_cast<FragmentShader::PointLightBuffer*>(Buffers);
+	assert(pPointLightBuffers);
+
+	FragmentShader::PointLightBuffer* InPointLightBuffers = new FragmentShader::PointLightBuffer[NumBuffers];
+	assert(InPointLightBuffers);
+
+	for (int i = 0; i < NumBuffers; ++i)
+	{
+		InPointLightBuffers[i] = pPointLightBuffers[i];
+	}
+
+	if (mFragmentShader->mPointLightBuffers != nullptr)
+	{
+		delete[] mFragmentShader->mPointLightBuffers;
+		mFragmentShader->mPointLightBuffers = nullptr;
+	}
+
+	mFragmentShader->mPointLightBuffers = InPointLightBuffers;
+	mFragmentShader->mPointLightBufferLength = NumBuffers;
 }
 
 FORCEINLINE void RenderContext::DrawGrid2D()

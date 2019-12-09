@@ -7,6 +7,9 @@
 #include "Vector3.h"
 #include "Matrix4x4.h"
 
+class RenderContext;
+class RenderFactory;
+
 struct VertexDataType
 {
 	Vector4 Position;
@@ -17,7 +20,7 @@ class ModelRenderComponent : public BaseComponent
 {
 public:
 
-	ModelRenderComponent(class RenderContext* InRenderer, class RenderFactory* InRenderFac);
+	ModelRenderComponent(const std::shared_ptr<RenderContext>& InRenderer, const std::shared_ptr<RenderFactory>& InRenderFac);
 	virtual ~ModelRenderComponent() = default;
 
 	void Awake(Entity* InParent) override;
@@ -36,7 +39,7 @@ private:
 	std::unique_ptr<UINT[]> mIndexData;
 	UINT mMeshLength;
 	UINT mIndexLength;
-	class RenderContext* mRenderer;
-	class RenderFactory* mRenderFactory;
+	std::shared_ptr<RenderContext> mRenderer;
+	std::shared_ptr<RenderFactory> mRenderFactory;
 
 };

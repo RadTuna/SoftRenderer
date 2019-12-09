@@ -6,7 +6,7 @@
 
 int APIENTRY _tWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR lpCmdLine, int nCmdShow)
 {
-	ScreenPoint defScreenSize(800, 600);
+	ScreenPoint defScreenSize(1280, 720);
 	SoftRenderer renderer;
 	WindowsPlayer::gOnResizeFunc = [&renderer](const ScreenPoint& InNewScreenSize) { 
 		if (InNewScreenSize.HasZero()) {

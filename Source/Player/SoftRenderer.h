@@ -79,8 +79,8 @@ private:
 	float FrameFPS = 0.f;
 
 	// Renderer Handler
-	std::unique_ptr<RenderContext> mRendererContext;
-	std::unique_ptr<RenderFactory> mRendererFactory;
+	std::shared_ptr<RenderContext> mRendererContext;
+	std::shared_ptr<RenderFactory> mRendererFactory;
 
 
 	std::unique_ptr<Scene> mSceneLevel;
@@ -163,7 +163,7 @@ FORCEINLINE void SoftRenderer::InitializeScene()
 {
 	mSceneLevel = std::make_unique<Scene>();
 
-	std::unique_ptr<ModelRenderComponent> ModelRenderComp = std::make_unique<ModelRenderComponent>(mRendererContext.get(), mRendererFactory.get());
+	std::unique_ptr<ModelRenderComponent> ModelRenderComp = std::make_unique<ModelRenderComponent>(mRendererContext, mRendererFactory);
 	std::unique_ptr<Entity> TestModelEntity = std::make_unique<Entity>("Model");
 
 	// Temporary Meshdata Injection code [Start];

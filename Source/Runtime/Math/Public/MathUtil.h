@@ -107,6 +107,18 @@ struct Math
 		}
 	}
 
+	static FORCEINLINE Vector4 Saturate(const Vector4& InVector)
+	{
+		Vector4 OutVector;
+
+		OutVector.X = Math::Clamp(InVector.X, 0.0f, 1.0f);
+		OutVector.Y = Math::Clamp(InVector.Y, 0.0f, 1.0f);
+		OutVector.Z = Math::Clamp(InVector.Z, 0.0f, 1.0f);
+		OutVector.W = Math::Clamp(InVector.W, 0.0f, 1.0f);
+
+		return OutVector;
+	}
+
 	static FORCEINLINE void GetSinCos(float& OutSin, float& OutCos, float InDegree)
 	{
 		if (InDegree == 0.f)

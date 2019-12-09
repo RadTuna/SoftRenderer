@@ -20,8 +20,8 @@ namespace InputManagerProxy
 
 SoftRenderer::SoftRenderer()
 {
-	mRendererContext = std::make_unique<RenderContext>();
-	mRendererFactory = std::make_unique<RenderFactory>();
+	mRendererContext = std::make_shared<RenderContext>();
+	mRendererFactory = std::make_shared<RenderFactory>();
 }
 
 void SoftRenderer::OnTick()

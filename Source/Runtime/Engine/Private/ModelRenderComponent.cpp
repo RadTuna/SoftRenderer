@@ -2,13 +2,15 @@
 #include "Precompiled.h"
 #include "..\Public\ModelRenderComponent.h"
 
+#include "Entity.h"
 #include "RenderFactory.h"
 #include "RenderContext.h"
-#include "Entity.h"
 
-ModelRenderComponent::ModelRenderComponent(RenderContext* InRenderer, RenderFactory* InRenderFac)
+ModelRenderComponent::ModelRenderComponent(const std::shared_ptr<RenderContext>& InRenderer, const std::shared_ptr<RenderFactory>& InRenderFac)
 	: mRenderer(InRenderer)
 	, mRenderFactory(InRenderFac)
+	, mMeshLength(0)
+	, mIndexLength(0)
 {
 }
 
