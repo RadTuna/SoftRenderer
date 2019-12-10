@@ -15,14 +15,6 @@ public:
 		float LightIntensity;
 	};
 
-	struct PointLightBuffer
-	{
-		Vector4 LightColor;
-		Vector4 LightPosition;
-		float LightIntensity;
-		float LightRadius;
-	};
-
 	// Structure의 이름은 고정.
 	struct FragmentInput
 	{
@@ -31,10 +23,7 @@ public:
 		Vector3 WorldNormal;
 	};
 
-	DirectionalLightBuffer* mDirectionalLightBuffers = nullptr;
-	UINT mDirectionalLightBufferLength = 0;
-	PointLightBuffer* mPointLightBuffers = nullptr;
-	UINT mPointLightBufferLength = 0;
+	DirectionalLightBuffer mDirectionalLightBuffer;
 
 public:
 
@@ -45,8 +34,6 @@ public:
 
 private:
 
-	FORCEINLINE const Vector4 DirectionalLightPass(FragmentInput& InputData, UINT NumPass);
-	FORCEINLINE const Vector4 PointLightPass(FragmentInput& InputData, UINT NumPass);
 	FORCEINLINE const Vector4 FragmentMain(FragmentInput& InputData);
 
 private:
@@ -65,46 +52,17 @@ FORCEINLINE void FragmentShader::ProcessFragmentShader(FragmentInput& InFragment
 	mRSI->DrawPoint(CurrentDrawPoint, ShaderColor);
 }
 
-FORCEINLINE const Vector4 FragmentShader::DirectionalLightPass(FragmentInput& InputData, UINT NumPass)
-{
-	// Diffuse
-	Vector3 InvLightDir = -mDirectionalLightBuffers[NumPass].LightDirection;
-	InvLightDir = InvLightDir.Normalize();
-	float LDotN = InvLightDir.Dot(InputData.WorldNormal);
-
-	Vector4 Diffuse = mDirectionalLightBuffers[NumPass].LightColor * LDotN;
-
-	return mDirectionalLightBuffers[NumPass].LightColor * LDotN * mPointLightBuffers[NumPass].LightIntensity;
-}
-
-FORCEINLINE const Vector4 FragmentShader::PointLightPass(FragmentInput& InputData, UINT NumPass)
-{
-	Vector3 InvLightDir = (mPointLightBuffers[NumPass].LightPosition - InputData.WorldPosition).ToVector3();
-	InvLightDir = InvLightDir.Normalize();
-	float LDotN = InvLightDir.Dot(InputData.WorldNormal);
-
-	return mPointLightBuffers[NumPass].LightColor * LDotN * mPointLightBuffers[NumPass].LightIntensity;
-}
-
 FORCEINLINE const Vector4 FragmentShader::FragmentMain(FragmentInput& InputData)
 {
 	Vector4 BaseColor = Vector4::Zero;
 	Vector4 AmbientLight(0.1f, 0.1f, 0.1f, 1.0f);
 
-	// Directional light multipass
-	for (int Dir = 0; Dir < mDirectionalLightBufferLength; ++Dir)
-	{
-		BaseColor += DirectionalLightPass(InputData, Dir);
-	}
-
-	// Point light multipass
-	for (int Point = 0; Point < mPointLightBufferLength; ++Point)
-	{
-		BaseColor += PointLightPass(InputData, Point);
-	}
+	Vector3 InvLightDirection = -mDirectionalLightBuffer.LightDirection;
+	float LDotN = Math::Saturate(InvLightDirection.Dot(InputData.WorldNormal));
+	BaseColor += mDirectionalLightBuffer.LightColor * LDotN * mDirectionalLightBuffer.LightIntensity;
 
 	BaseColor += AmbientLight;
 
-	return Math::Saturate(BaseColor);
+	return Vector4::Saturate(BaseColor);
 }
 

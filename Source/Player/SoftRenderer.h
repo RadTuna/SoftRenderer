@@ -11,6 +11,7 @@
 #include "ModelRenderComponent.h"
 #include "CameraComponent.h"
 #include "MovementComponent.h"
+#include "LightComponent.h"
 
 
 struct MatrixBufferType
@@ -214,8 +215,16 @@ FORCEINLINE void SoftRenderer::InitializeScene()
 	CameraEntity->AddComponent(std::move(CameraComp));
 	CameraEntity->AddComponent(std::move(MovementComp));
 
+	std::unique_ptr<LightComponent> LightComp = std::make_unique<LightComponent>(mRendererContext);
+	std::unique_ptr<Entity> LightEntity = std::make_unique<Entity>("Light");
+	LightComp->SetLightParameter(Vector4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f);
+	LightEntity->SetRotation(Vector3(45.0f, 0.0f, 0.0f));
+
+	LightEntity->AddComponent(std::move(LightComp));
+
 	mSceneLevel->AddEntity(std::move(TestModelEntity));
 	mSceneLevel->AddEntity(std::move(CameraEntity));
+	mSceneLevel->AddEntity(std::move(LightEntity));
 }
 
 FORCEINLINE void SoftRenderer::SetRenderParameter(ModelRenderComponent* InComp)
@@ -226,11 +235,11 @@ FORCEINLINE void SoftRenderer::SetRenderParameter(ModelRenderComponent* InComp)
 
 	float ScreenAspect = static_cast<float>(CurrentScreenSize.X) / static_cast<float>(CurrentScreenSize.Y);
 
-	std::unique_ptr<MatrixBufferType> RenderMatrixBuffer = std::make_unique<MatrixBufferType>();
-	InComp->GetWorldMatrix(RenderMatrixBuffer->WorldMatrix);
-	mCurrentCameraComp->GetViewMatrix(RenderMatrixBuffer->ViewMatrix);
-	mCurrentCameraComp->GetProjectionMatrix(RenderMatrixBuffer->ProjectionMatrix, ScreenAspect);
+	MatrixBufferType RenderMatrixBuffer;
+	InComp->GetWorldMatrix(RenderMatrixBuffer.WorldMatrix);
+	mCurrentCameraComp->GetViewMatrix(RenderMatrixBuffer.ViewMatrix);
+	mCurrentCameraComp->GetProjectionMatrix(RenderMatrixBuffer.ProjectionMatrix, ScreenAspect);
 
-	mRendererContext->VSSetMatrixBuffer(RenderMatrixBuffer.get());
+	mRendererContext->VSSetMatrixBuffer(&RenderMatrixBuffer);
 }
 

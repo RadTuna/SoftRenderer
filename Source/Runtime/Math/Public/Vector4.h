@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vector3.h"
+#include "MathUtil.h"
 
 struct Vector4
 {
@@ -17,6 +18,8 @@ public:
 	{
 		return X == 0.f && Y == 0.f && Z == 0.f && W == 0.f;
 	}
+
+	static FORCEINLINE Vector4 Saturate(const Vector4& InVector);
 
 	FORCEINLINE Vector2 ToVector2() const;
 	FORCEINLINE Vector3 ToVector3() const;
@@ -90,6 +93,20 @@ FORCEINLINE float Vector4::Dot(const Vector4& InV) const
 FORCEINLINE float Vector4::Dot(const Vector3& InV) const
 {
 	return X * InV.X + Y * InV.Y + Z * InV.Z;
+}
+
+FORCEINLINE Vector4 Vector4::Saturate(const Vector4& InVector)
+{
+	{
+		Vector4 OutVector;
+
+		OutVector.X = Math::Clamp(InVector.X, 0.0f, 1.0f);
+		OutVector.Y = Math::Clamp(InVector.Y, 0.0f, 1.0f);
+		OutVector.Z = Math::Clamp(InVector.Z, 0.0f, 1.0f);
+		OutVector.W = Math::Clamp(InVector.W, 0.0f, 1.0f);
+
+		return OutVector;
+	}
 }
 
 FORCEINLINE Vector2 Vector4::ToVector2() const
