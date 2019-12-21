@@ -6,15 +6,10 @@
 #include "Vector4.h"
 #include "Vector3.h"
 #include "Matrix4x4.h"
+#include "ModelAsset.h"
 
 class RenderContext;
 class RenderFactory;
-
-struct VertexDataType
-{
-	Vector4 Position;
-	Vector3 Normal;
-};
 
 class ModelRenderComponent : public BaseComponent
 {
@@ -28,17 +23,11 @@ public:
 	void Render() override;
 	void End() override;
 
-	void SetMeshData(std::unique_ptr<VertexDataType[]>&& InMeshData, UINT InMeshLength);
-	void SetIndexData(std::unique_ptr<UINT[]>&& InIndexData, UINT InIndexLength);
-
 	void GetWorldMatrix(Matrix4x4& OutMatrix);
 
 private:
 
-	std::unique_ptr<VertexDataType[]> mMeshData;
-	std::unique_ptr<UINT[]> mIndexData;
-	UINT mMeshLength;
-	UINT mIndexLength;
+	std::unique_ptr<ModelAsset> mModelAsset;
 	std::shared_ptr<RenderContext> mRenderer;
 	std::shared_ptr<RenderFactory> mRenderFactory;
 

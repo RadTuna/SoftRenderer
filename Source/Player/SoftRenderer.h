@@ -167,40 +167,6 @@ FORCEINLINE void SoftRenderer::InitializeScene()
 	std::unique_ptr<ModelRenderComponent> ModelRenderComp = std::make_unique<ModelRenderComponent>(mRendererContext, mRendererFactory);
 	std::unique_ptr<Entity> TestModelEntity = std::make_unique<Entity>("Model");
 
-	// Temporary Meshdata Injection code [Start];
-	UINT VertexBufferLength = 8;
-	UINT IndexBufferLength = 36;
-
-	std::unique_ptr<VertexDataType[]> Vertices = std::make_unique<VertexDataType[]>(VertexBufferLength);
-	Vertices[0].Position = Vector4(-10.0f, 10.0f, -10.0f, 0.0f);
-	Vertices[0].Normal = Vector3(-1.0f, 1.0f, -1.0f);
-	Vertices[1].Position = Vector4(10.0f, 10.0f, -10.0f, 0.0f);
-	Vertices[1].Normal = Vector3(1.0f, 1.0f, -1.0f);
-	Vertices[2].Position = Vector4(10.0f, 10.0f, 10.0f, 0.0f);
-	Vertices[2].Normal = Vector3(1.0f, 1.0f, 1.0f);
-	Vertices[3].Position = Vector4(-10.0f, 10.0f, 10.0f, 0.0f);
-	Vertices[3].Normal = Vector3(-1.0f, 1.0f, 1.0f);
-	Vertices[4].Position = Vector4(-10.0f, -10.0f, -10.0f, 0.0f);
-	Vertices[4].Normal = Vector3(-1.0f, -1.0f, -1.0f);
-	Vertices[5].Position = Vector4(10.0f, -10.0f, -10.0f, 0.0f);
-	Vertices[5].Normal = Vector3(1.0f, -1.0f, -1.0f);
-	Vertices[6].Position = Vector4(10.0f, -10.0f, 10.0f, 0.0f);
-	Vertices[6].Normal = Vector3(1.0f, -1.0f, 1.0f);
-	Vertices[7].Position = Vector4(-10.0f, -10.0f, 10.0f, 0.0f);
-	Vertices[7].Normal = Vector3(-1.0f, -1.0f, 1.0f);
-
-	std::unique_ptr<UINT[]> Indices(new UINT[IndexBufferLength]{
-		1, 0, 3, 1, 3, 2,
-		0, 1, 4, 1, 5, 4,
-		0, 4, 3, 3, 4, 7,
-		2, 3, 7, 2, 7, 6,
-		2, 6, 5, 2, 5, 1,
-		4, 5, 7, 5, 6, 7 });
-
-	ModelRenderComp->SetMeshData(std::move(Vertices), VertexBufferLength);
-	ModelRenderComp->SetIndexData(std::move(Indices), IndexBufferLength);
-	// Temporary Meshdata Injection code [End];
-
 	TestModelEntity->AddComponent(std::move(ModelRenderComp));
 
 	std::unique_ptr<CameraComponent> CameraComp = std::make_unique<CameraComponent>();
