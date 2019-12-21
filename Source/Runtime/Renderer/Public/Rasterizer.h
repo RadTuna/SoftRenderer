@@ -290,6 +290,10 @@ FORCEINLINE void Rasterizer::GetInterpolratedFragment(const Vector2& InPosition,
 	OutPrimitive->Position = InPosition;
 
 	// Interpolrated
+	OutPrimitive->UV = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].UV * BarycentricWeight.X
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].UV * BarycentricWeight.Y
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].UV * BarycentricWeight.Z;
+
 	OutPrimitive->WorldPosition = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].WorldPosition * BarycentricWeight.X
 		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].WorldPosition * BarycentricWeight.Y
 		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].WorldPosition * BarycentricWeight.Z;

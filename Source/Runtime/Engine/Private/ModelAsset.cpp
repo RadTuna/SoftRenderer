@@ -71,14 +71,15 @@ void ModelAsset::Load(const std::string& InPath)
 
 	assert(IndexPositions.size() == IndexUVs.size() && IndexUVs.size() == IndexNormals.size());
 
-	VerticesLength = IndicesLength = IndexPositions.size();
+	mVerticesLength = mIndicesLength = IndexPositions.size();
 
-	Vertices = std::make_unique<VertexDataType[]>(VerticesLength);
-	Indices = std::make_unique<UINT[]>(IndicesLength);
+	mVertices = std::make_unique<VertexDataType[]>(mVerticesLength);
+	mIndices = std::make_unique<UINT[]>(mIndicesLength);
 	for (int i = 0; i < IndexPositions.size(); ++i)
 	{
-		Vertices[i].Position = VertPositions[IndexPositions[i] - 1];
-		Vertices[i].Normal = VertNormals[IndexNormals[i] - 1];
-		Indices[i] = i;
+		mVertices[i].Position = VertPositions[IndexPositions[i] - 1];
+		mVertices[i].UV = VertUVs[IndexUVs[i] - 1];
+		mVertices[i].Normal = VertNormals[IndexNormals[i] - 1];
+		mIndices[i] = i;
 	}
 }

@@ -7,10 +7,11 @@
 #include "Vector3.h"
 #include "Matrix4x4.h"
 #include "ModelAsset.h"
+#include "TextureAsset.h"
+
 
 class RenderContext;
 class RenderFactory;
-
 class ModelRenderComponent : public BaseComponent
 {
 public:
@@ -28,6 +29,8 @@ public:
 private:
 
 	std::unique_ptr<ModelAsset> mModelAsset;
+	std::unique_ptr<TextureAsset> mAlbedoAsset;
+
 	std::shared_ptr<RenderContext> mRenderer;
 	std::shared_ptr<RenderFactory> mRenderFactory;
 

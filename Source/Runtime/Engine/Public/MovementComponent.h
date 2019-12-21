@@ -18,7 +18,7 @@ public:
 
 private:
 
-	float MoveSensivity = 100.0f;
-	float RotateSensivity = 50.0f;
+	float mMoveSensivity = 100.0f;
+	float mRotateSensivity = 50.0f;
 
 };

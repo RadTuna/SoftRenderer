@@ -20,14 +20,14 @@ void MovementComponent::Update(float DeltaTime)
 	Vector4 MovementVector;
 	Vector3 RotationVector;
 
-	MovementVector.X = -InputManagerProxy::MoveRight() * DeltaTime * MoveSensivity;
-	MovementVector.Y = -InputManagerProxy::MoveUp() * DeltaTime * MoveSensivity;
-	MovementVector.Z = InputManagerProxy::MoveForward() * DeltaTime * MoveSensivity;
+	MovementVector.X = -InputManagerProxy::MoveRight() * DeltaTime * mMoveSensivity;
+	MovementVector.Y = -InputManagerProxy::MoveUp() * DeltaTime * mMoveSensivity;
+	MovementVector.Z = InputManagerProxy::MoveForward() * DeltaTime * mMoveSensivity;
 
 	if (InputManagerProxy::MouseRB())
 	{
-		RotationVector.X = -InputManagerProxy::GetYAxis() * RotateSensivity;
-		RotationVector.Y = -InputManagerProxy::GetXAxis() * RotateSensivity;
+		RotationVector.X = -InputManagerProxy::GetYAxis() * mRotateSensivity;
+		RotationVector.Y = -InputManagerProxy::GetXAxis() * mRotateSensivity;
 	}
 
 	Matrix4x4 ViewRotationMatrix = Matrix4x4::GetRotationMatrix(-mParentEntity->GetRotation());
@@ -47,6 +47,6 @@ void MovementComponent::End()
 
 void MovementComponent::SetMovementParameter(float InMove, float InRot)
 {
-	MoveSensivity = InMove;
-	RotateSensivity = InRot;
+	mMoveSensivity = InMove;
+	mRotateSensivity = InRot;
 }

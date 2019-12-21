@@ -36,3 +36,8 @@ Color32 LinearColor::ToColor32(const bool bSRGB) const
 	);
 }
 
+Vector4 LinearColor::ToVector4() const
+{
+	return Vector4(R, G, B, A);
+}
+

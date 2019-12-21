@@ -2,6 +2,9 @@
 #include "Precompiled.h"
 #include "..\Public\RenderFactory.h"
 
+#include "Color32.h"
+#include "LinearColor.h"
+
 bool RenderFactory::CreateVertexBuffer(UINT DataSize, void* InData, VertexBuffer** OutBuffer)
 {
 	if (InData == nullptr || *OutBuffer != nullptr)
@@ -73,3 +76,4 @@ bool RenderFactory::CreateIndexBuffer(UINT DataSize, void* InData, IndexBuffer**
 
 	return true;
 }
+

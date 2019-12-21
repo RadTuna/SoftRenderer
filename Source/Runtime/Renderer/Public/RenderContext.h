@@ -30,6 +30,7 @@ public:
 	FORCEINLINE void IASetIndexBuffer(IndexBuffer* Buffer, UINT Stride);
 	FORCEINLINE void VSSetMatrixBuffer(void* Buffer);
 	FORCEINLINE void FSSetDirectionalLightBuffer(void* Buffer);
+	FORCEINLINE void FSSetTextureBuffer(void* Buffer);
 
 	FORCEINLINE void DrawGrid2D();
 
@@ -95,10 +96,7 @@ FORCEINLINE void RenderContext::IASetIndexBuffer(IndexBuffer* Buffer, UINT Strid
 
 FORCEINLINE void RenderContext::VSSetMatrixBuffer(void* Buffer)
 {
-	if (Buffer == nullptr)
-	{
-		return;
-	}
+	assert(Buffer);
 
 	VertexShader::MatrixBuffer* pMatrixBuffer = reinterpret_cast<VertexShader::MatrixBuffer*>(Buffer);
 	assert(pMatrixBuffer);
@@ -110,18 +108,26 @@ FORCEINLINE void RenderContext::VSSetMatrixBuffer(void* Buffer)
 
 FORCEINLINE void RenderContext::FSSetDirectionalLightBuffer(void* Buffer)
 {
-	if (Buffer == nullptr)
-	{
-		return;
-	}
+	assert(Buffer);
 
-	FragmentShader::DirectionalLightBuffer* pDirectionalLightBuffers = reinterpret_cast<FragmentShader::DirectionalLightBuffer*>(Buffer);
-	assert(pDirectionalLightBuffers);
+	FragmentShader::DirectionalLightBuffer* pDirectionalLightBuffer = reinterpret_cast<FragmentShader::DirectionalLightBuffer*>(Buffer);
+	assert(pDirectionalLightBuffer);
 
-	mFragmentShader->mDirectionalLightBuffer.LightColor = pDirectionalLightBuffers->LightColor;
-	mFragmentShader->mDirectionalLightBuffer.LightDirection = pDirectionalLightBuffers->LightDirection;
-	mFragmentShader->mDirectionalLightBuffer.LightIntensity = pDirectionalLightBuffers->LightIntensity;
+	mFragmentShader->mDirectionalLightBuffer.LightColor = pDirectionalLightBuffer->LightColor;
+	mFragmentShader->mDirectionalLightBuffer.LightDirection = pDirectionalLightBuffer->LightDirection;
+	mFragmentShader->mDirectionalLightBuffer.LightIntensity = pDirectionalLightBuffer->LightIntensity;
 }
+
+FORCEINLINE void RenderContext::FSSetTextureBuffer(void* Buffer)
+{
+	assert(Buffer);
+
+	FragmentShader::TextureBuffer* pTextureBuffer = reinterpret_cast<FragmentShader::TextureBuffer*>(Buffer);
+	assert(pTextureBuffer);
+
+	mFragmentShader->mTextureBuffer.AlbedoMap = pTextureBuffer->AlbedoMap;
+}
+
 
 FORCEINLINE void RenderContext::DrawGrid2D()
 {

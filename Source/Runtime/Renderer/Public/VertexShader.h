@@ -21,6 +21,7 @@ public:
 	struct VertexInput
 	{
 		Vector4 Position;
+		Vector2 UV;
 		Vector3 Normal;
 	};
 
@@ -28,6 +29,7 @@ public:
 	struct VertexOutput
 	{
 		Vector4 Position;
+		Vector2 UV;
 		Vector3 WorldPosition;
 		Vector3 WorldNormal;
 	};
@@ -83,6 +85,8 @@ FORCEINLINE VertexShader::VertexOutput VertexShader::VertexMain(VertexInput Inpu
 	Output.Position.X /= Output.Position.W;
 	Output.Position.Y /= Output.Position.W;
 	Output.Position.Z /= Output.Position.W;
+
+	Output.UV = InputData.UV;
 
 	return Output;
 }

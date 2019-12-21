@@ -15,6 +15,7 @@ public:
 
 	FORCEINLINE bool EqualsInRange(const LinearColor& InColor, float InRange) const;
 	Color32 ToColor32(const bool bSRGB = false) const;
+	Vector4 ToVector4() const;
 
 	FORCEINLINE LinearColor operator+(const LinearColor& InColor) const;
 	FORCEINLINE LinearColor operator-(const LinearColor& InColor) const;

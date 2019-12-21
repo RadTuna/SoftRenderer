@@ -9,6 +9,7 @@
 struct VertexDataType
 {
 	Vector4 Position;
+	Vector2 UV;
 	Vector3 Normal;
 };
 
@@ -25,17 +26,17 @@ public:
 
 private:
 
-	std::unique_ptr<VertexDataType[]> Vertices;
-	std::unique_ptr<UINT[]> Indices;
-	UINT VerticesLength;
-	UINT IndicesLength;
+	std::unique_ptr<VertexDataType[]> mVertices;
+	std::unique_ptr<UINT[]> mIndices;
+	UINT mVerticesLength;
+	UINT mIndicesLength;
 
 public:
 
-	FORCEINLINE VertexDataType* GetVertices() const { return Vertices.get(); }
-	FORCEINLINE UINT* GetIndices() const { return Indices.get(); }
-	FORCEINLINE UINT GetVerticesLength() const { return VerticesLength; }
-	FORCEINLINE UINT GetIndicesLength() const { return IndicesLength; }
+	FORCEINLINE VertexDataType* GetVertices() const { return mVertices.get(); }
+	FORCEINLINE UINT* GetIndices() const { return mIndices.get(); }
+	FORCEINLINE UINT GetVerticesLength() const { return mVerticesLength; }
+	FORCEINLINE UINT GetIndicesLength() const { return mIndicesLength; }
 
 };
 

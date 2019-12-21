@@ -12,6 +12,7 @@ ModelRenderComponent::ModelRenderComponent(const std::shared_ptr<RenderContext>&
 	, mRenderFactory(InRenderFac)
 {
 	mModelAsset = std::make_unique<ModelAsset>();
+	mAlbedoAsset = std::make_unique<TextureAsset>();
 }
 
 void ModelRenderComponent::Awake(Entity* InParent)
@@ -19,6 +20,7 @@ void ModelRenderComponent::Awake(Entity* InParent)
 	BaseComponent::Awake(InParent);
 
 	mModelAsset->Load("../Resource/Sphere.obj");
+	mAlbedoAsset->Load("../Resource/stone.tga");
 }
 
 void ModelRenderComponent::Update(float DeltaTime)
@@ -38,6 +40,17 @@ void ModelRenderComponent::Render()
 
 	mRenderer->IASetVertexBuffer(RenderVertexBuffer, sizeof(VertexDataType));
 	mRenderer->IASetIndexBuffer(RenderIndexBuffer, sizeof(UINT));
+
+	TextureDataType AlbedoData;
+	AlbedoData.ColorData = mAlbedoAsset->GetTextureData();
+	AlbedoData.DataSize = mAlbedoAsset->GetTextureDataSize();
+	AlbedoData.TexHeight = mAlbedoAsset->GetTextureHeight();
+	AlbedoData.TexWidth = mAlbedoAsset->GetTextureWidth();
+
+	TextureBufferDataType TextureBuffer;
+	TextureBuffer.AlbedoMap = AlbedoData;
+
+	mRenderer->FSSetTextureBuffer(&TextureBuffer);
 }
 
 void ModelRenderComponent::End()

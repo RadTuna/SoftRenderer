@@ -33,3 +33,12 @@ struct IndexBuffer
 	unsigned char* Data;
 	UINT DataSize;
 };
+
+class LinearColor;
+struct RenderTexture
+{
+	LinearColor* ColorData;
+	UINT DataSize;
+	UINT TexHeight;
+	UINT TexWidth;
+};
