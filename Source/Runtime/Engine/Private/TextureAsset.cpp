@@ -29,30 +29,27 @@ void TextureAsset::Load(const std::string& InPath)
 	std::unique_ptr<BYTE[]> TargaImage = std::make_unique<BYTE[]>(ImageSize);
 	assert(TargaImage != nullptr);
 
-	Fin.read(reinterpret_cast<char*>(TargaImage.get()), sizeof(ImageSize));
+	Fin.read(reinterpret_cast<char*>(TargaImage.get()), ImageSize);
 	Fin.close();
 
 	mTextureData = std::make_unique<LinearColor[]>(mTextureHeight * mTextureWidth);
 	assert(mTextureData != nullptr);
 
 	int Index = 0;
-	int K = (mTextureWidth * mTextureHeight * 4) - (mTextureWidth * 4);
 	Color32 TempColorBuffer;
 	for (UINT j = 0; j < mTextureHeight; ++j)
 	{
 		for (UINT i = 0; i < mTextureHeight; ++i)
 		{
-			TempColorBuffer.R = TargaImage[K + 2];  // Red.
-			TempColorBuffer.G = TargaImage[K + 1];  // Green.
-			TempColorBuffer.B = TargaImage[K + 0];  // Blue
-			TempColorBuffer.A = TargaImage[K + 3];  // Alpha
+			TempColorBuffer.R = TargaImage[Index + 2];  // Red.
+			TempColorBuffer.G = TargaImage[Index + 1];  // Green.
+			TempColorBuffer.B = TargaImage[Index + 0];  // Blue
+			TempColorBuffer.A = TargaImage[Index + 3];  // Alpha
 
-			mTextureData[Index] = LinearColor(TempColorBuffer); // Gamma to Linear
+			mTextureData[mTextureWidth * i + j] = LinearColor(TempColorBuffer); // Gamma to Linear
 
-			K += 4;
-			++Index;
+			Index += 4;
 		}
 
-		K -= (mTextureWidth * 8);
 	}
 }

@@ -19,8 +19,8 @@ void ModelRenderComponent::Awake(Entity* InParent)
 {
 	BaseComponent::Awake(InParent);
 
-	mModelAsset->Load("../Resource/Sphere.obj");
-	mAlbedoAsset->Load("../Resource/stone.tga");
+	mModelAsset->Load("../Resource/Dog.obj");
+	mAlbedoAsset->Load("../Resource/Dog.tga");
 }
 
 void ModelRenderComponent::Update(float DeltaTime)

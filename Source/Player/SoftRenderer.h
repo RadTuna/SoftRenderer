@@ -172,7 +172,7 @@ FORCEINLINE void SoftRenderer::InitializeScene()
 	std::unique_ptr<CameraComponent> CameraComp = std::make_unique<CameraComponent>();
 	std::unique_ptr<MovementComponent> MovementComp = std::make_unique<MovementComponent>();
 	std::unique_ptr<Entity> CameraEntity = std::make_unique<Entity>("Camera");
-	CameraComp->SetCameraParameter(60.0f, 0.3f, 1000.0f);
+	CameraComp->SetCameraParameter(60.0f, 5.0f, 500.0f);
 	CameraEntity->SetLocation(Vector4(0.0f, 0.0f, -150.0f, 1.0f));
 	CameraEntity->SetRotation(Vector3(0.0f, 0.0f, 0.0f));
 	MovementComp->SetMovementParameter(100.0f, 50.0f);
@@ -184,7 +184,7 @@ FORCEINLINE void SoftRenderer::InitializeScene()
 	std::unique_ptr<LightComponent> LightComp = std::make_unique<LightComponent>(mRendererContext);
 	std::unique_ptr<Entity> LightEntity = std::make_unique<Entity>("Light");
 	LightComp->SetLightParameter(Vector4(1.0f, 1.0f, 1.0f, 1.0f), 1.0f);
-	LightEntity->SetRotation(Vector3(45.0f, 0.0f, 0.0f));
+	LightEntity->SetRotation(Vector3(30.0f, 30.0f, 0.0f));
 
 	LightEntity->AddComponent(std::move(LightComp));
 

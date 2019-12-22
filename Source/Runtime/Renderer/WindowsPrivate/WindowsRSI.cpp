@@ -21,15 +21,6 @@ void WindowsRSI::Shutdown()
 void WindowsRSI::SetBlendingMode(BlendingModes InNewBlendingMode)
 {
 	BlendingMode = InNewBlendingMode;
-	//using namespace std::placeholders;
-	//if (BlendingMode == BlendingModes::Opaque)
-	//{
-	//	SetPixel = std::bind(&WindowsGDI::SetPixelOpaque, this, _1, _2);
-	//}
-	//else if (BlendingMode == BlendingModes::AlphaBlending)
-	//{
-	//	SetPixel = std::bind(&WindowsGDI::SetPixelAlphaBlending, this, _1, _2);
-	//}
 }
 
 void WindowsRSI::Clear(const LinearColor & InClearColor)
@@ -55,6 +46,33 @@ void WindowsRSI::DrawPoint(const Vector2& InVectorPos, const LinearColor& InColo
 void WindowsRSI::DrawPoint(const ScreenPoint& InScreenPos, const LinearColor& InColor)
 {
 	SetPixel(InScreenPos, InColor);
+}
+
+bool WindowsRSI::SetDepthPoint(const Vector2& InVectorPos, float InDepth)
+{
+	ScreenPoint CurScreenPoint = ScreenPoint::ToScreenCoordinate(ScreenSize, InVectorPos);
+	if (GetDepthBufferValue(CurScreenPoint) > InDepth)
+	{
+		SetDepthBufferValue(CurScreenPoint, InDepth);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool WindowsRSI::SetDepthPoint(const ScreenPoint& InScreenPos, float InDepth)
+{
+	if (GetDepthBufferValue(InScreenPos) > InDepth)
+	{
+		SetDepthBufferValue(InScreenPos, InDepth);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void WindowsRSI::DrawFullVerticalLine(int InX, const LinearColor & InColor)

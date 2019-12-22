@@ -152,6 +152,7 @@ void WindowsGDI::SwapBuffer()
 	}
 
 	BitBlt(ScreenDC, 0, 0, ScreenSize.X, ScreenSize.Y, MemoryDC, 0, 0, SRCCOPY);
+	ClearDepthBuffer();
 }
 
 void WindowsGDI::SetPixelOpaque(const ScreenPoint& InPos, const LinearColor& InColor)
@@ -180,7 +181,14 @@ void WindowsGDI::SetPixelAlphaBlending(const ScreenPoint & InPos, const LinearCo
 
 void WindowsGDI::CreateDepthBuffer()
 {
+	if (DepthBuffer != nullptr)
+	{
+		delete[] DepthBuffer;
+		DepthBuffer = nullptr;
+	}
+
 	DepthBuffer = new float[ScreenSize.X * ScreenSize.Y];
+	ClearDepthBuffer();
 }
 
 void WindowsGDI::ClearDepthBuffer()

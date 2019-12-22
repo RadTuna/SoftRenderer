@@ -9,10 +9,9 @@
 class WindowsGDI
 {
 public:
+
 	WindowsGDI() = default;
 	~WindowsGDI();
-
-public:
 
 	bool InitializeGDI(const ScreenPoint& InScreenSize);
 	void ReleaseGDI();
@@ -20,7 +19,6 @@ public:
 	void FillBuffer(Color32 InColor);
 
 	LinearColor GetPixel(const ScreenPoint& InPos);
-	//std::function<void(const ScreenPoint &, const LinearColor &)> SetPixel;
 
 	void SetPixelOpaque(const ScreenPoint& InPos, const LinearColor& InColor);
 	void SetPixelAlphaBlending(const ScreenPoint& InPos, const LinearColor& InColor);

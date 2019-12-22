@@ -30,7 +30,7 @@ public:
 	FORCEINLINE void WriteGeometryOutline(const Vector4& StartPoint, const Vector4& EndPoint);
 
 	FORCEINLINE void GetBarycentricCoodinate(const Vector2& InPosition, Vector3& OutCoord);
-	FORCEINLINE void GetInterpolratedFragment(const Vector2& InPosition, FragmentShader::FragmentInput* OutPrimitive);
+	FORCEINLINE bool GetInterpolatedFragment(const Vector2& InPosition, FragmentShader::FragmentInput* OutPrimitive);
 	FORCEINLINE void SortVertexByY(VertexShader::VertexOutput* PrimitiveData);
 	FORCEINLINE bool IsFrontNormal(VertexShader::VertexOutput* PrimitiveData);
 	FORCEINLINE void CalculrateCachedDotProduct();
@@ -118,7 +118,6 @@ FORCEINLINE void Rasterizer::Rasterize(VertexShader::VertexOutput* PrimitiveData
 	// Rasterization 기능이 활성화 되어 있으면 실행.
 	if (bUseRasterization == true)
 	{
-		// Calculrate Dotproduct Cache
 		CalculrateCachedDotProduct();
 
 		if (Math::IsNearlyFloat(PrimitiveData[PRIMITIVE_INDEX_ONE].Position.Y, PrimitiveData[PRIMITIVE_INDEX_TWO].Position.Y) == true)
@@ -206,7 +205,12 @@ FORCEINLINE void Rasterizer::WriteFlatLine(const Vector4& StartPoint, const Vect
 		Vector2 CurrentPosition(PosX, StartPoint.Y);
 
 		FragmentShader::FragmentInput FragmentData;
-		GetInterpolratedFragment(CurrentPosition, &FragmentData);
+
+		if (!GetInterpolatedFragment(CurrentPosition, &FragmentData))
+		{
+			continue;
+		}
+
 		mFragmentShader->ProcessFragmentShader(FragmentData);
 	}
 }
@@ -280,7 +284,7 @@ FORCEINLINE void Rasterizer::GetBarycentricCoodinate(const Vector2& InPosition, 
 	OutCoord.X = 1.0f - OutCoord.Y - OutCoord.Z;
 }
 
-FORCEINLINE void Rasterizer::GetInterpolratedFragment(const Vector2& InPosition, FragmentShader::FragmentInput* OutPrimitive)
+FORCEINLINE bool Rasterizer::GetInterpolatedFragment(const Vector2& InPosition, FragmentShader::FragmentInput* OutPrimitive)
 {
 	// return InterpolratedPrimitive;
 	Vector3 BarycentricWeight;
@@ -290,6 +294,14 @@ FORCEINLINE void Rasterizer::GetInterpolratedFragment(const Vector2& InPosition,
 	OutPrimitive->Position = InPosition;
 
 	// Interpolrated
+	OutPrimitive->Depth = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].Position.Z * BarycentricWeight.X
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].Position.Z * BarycentricWeight.Y
+		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].Position.Z * BarycentricWeight.Z;
+	if (!mRSI->SetDepthPoint(InPosition, OutPrimitive->Depth))
+	{
+		return false;
+	}
+
 	OutPrimitive->UV = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].UV * BarycentricWeight.X
 		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].UV * BarycentricWeight.Y
 		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].UV * BarycentricWeight.Z;
@@ -301,6 +313,8 @@ FORCEINLINE void Rasterizer::GetInterpolratedFragment(const Vector2& InPosition,
 	OutPrimitive->WorldNormal = mCurrentPrimitiveData[PRIMITIVE_INDEX_ONE].WorldNormal * BarycentricWeight.X
 		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_TWO].WorldNormal * BarycentricWeight.Y
 		+ mCurrentPrimitiveData[PRIMITIVE_INDEX_THREE].WorldNormal * BarycentricWeight.Z;
+
+	return true;
 }
 
 FORCEINLINE void Rasterizer::SortVertexByY(VertexShader::VertexOutput* PrimitiveData)

@@ -23,10 +23,11 @@ public:
 	// Structure의 이름은 고정.
 	struct FragmentInput
 	{
-		Vector4 Position;
+		Vector2 Position;
 		Vector2 UV;
 		Vector3 WorldPosition;
 		Vector3 WorldNormal;
+		float Depth;
 	};
 
 	DirectionalLightBuffer mDirectionalLightBuffer;
@@ -56,7 +57,7 @@ FORCEINLINE void FragmentShader::ProcessFragmentShader(FragmentInput& InFragment
 {
 	LinearColor ShaderColor = FragmentMain(InFragment);
 
-	ScreenPoint CurrentDrawPoint = ScreenPoint::ToScreenCoordinate(mScreenSize, InFragment.Position.ToVector2());
+	ScreenPoint CurrentDrawPoint = ScreenPoint::ToScreenCoordinate(mScreenSize, InFragment.Position);
 
 	mRSI->DrawPoint(CurrentDrawPoint, ShaderColor);
 }
@@ -69,10 +70,15 @@ FORCEINLINE const Vector4 FragmentShader::FragmentMain(FragmentInput& InputData)
 	Vector3 InvLightDirection = -mDirectionalLightBuffer.LightDirection;
 	float LDotN = Math::Saturate(InvLightDirection.Dot(InputData.WorldNormal));
 	Vector4 DiffuseColor = mDirectionalLightBuffer.LightColor * LDotN * mDirectionalLightBuffer.LightIntensity;
+	DiffuseColor = DiffuseColor + AmbientLight;
 
-	AlbedoColor = AlbedoColor + AmbientLight;
+	AlbedoColor.X = AlbedoColor.X * DiffuseColor.X;
+	AlbedoColor.Y = AlbedoColor.Y * DiffuseColor.Y;
+	AlbedoColor.Z = AlbedoColor.Z * DiffuseColor.Z;
+	AlbedoColor.W = AlbedoColor.W * DiffuseColor.W;
 
 	return Vector4::Saturate(AlbedoColor);
+	//return Vector4(1.0f - InputData.Depth, 1.0f - InputData.Depth, 1.0f - InputData.Depth, 1.0f);
 }
 
 Vector4 FragmentShader::SampleTexture(const RenderTexture& InTexture, const Vector2& InUV)

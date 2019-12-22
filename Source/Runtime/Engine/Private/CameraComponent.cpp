@@ -61,7 +61,7 @@ void CameraComponent::GetViewMatrix(Matrix4x4& OutMatrix) const
 
 void CameraComponent::GetProjectionMatrix(Matrix4x4& OutMatrix, float ScreenAspect) const
 {
-	float YScale = 1.0f / std::tanf(Math::Deg2Rad(mCameraFov) / 2.0f);
+	float YScale = 1.0f / std::tanf(Math::Deg2Rad(mCameraFov) * 0.5f);
 	float XScale = YScale * ScreenAspect;
 
 	float ZScale = mCameraFarPlane / (mCameraFarPlane - mCameraNearPlane);

@@ -21,6 +21,9 @@ public:
 	virtual void DrawPoint(const Vector2& InVectorPos, const LinearColor& InColor) = 0;
 	virtual void DrawPoint(const ScreenPoint& InScreenPos, const LinearColor& InColor) = 0;
 
+	virtual bool SetDepthPoint(const Vector2& InVectorPos, float InDepth) = 0;
+	virtual bool SetDepthPoint(const ScreenPoint& InScreenPos, float InDepth) = 0;
+
 	virtual void DrawFullVerticalLine(int InX, const LinearColor& InColor) = 0;
 	virtual void DrawFullHorizontalLine(int InY, const LinearColor& InColor) = 0;
 };
