@@ -17,4 +17,7 @@ Visual Studio 2017 or 2019: https://visualstudio.microsoft.com
 2. Project 폴더 안에 존재하는 .sln 파일을 실행하여 VS를 이용해 빌드합니다.  
 
 ## Feature
-
+![image](https://user-images.githubusercontent.com/49399405/131482366-d3e8d1f2-3004-4eb0-bee5-6db9050f9dd6.png)
+- OBJ, TGA 자체 파싱 및 렌더링
+- Lambert Diffuse / Blin-Phong Specular 적용
+- Entity-Component 구조 적용
